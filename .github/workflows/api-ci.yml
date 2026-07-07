@@ -1,0 +1,115 @@
+name: API CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lexflow
+          POSTGRES_PASSWORD: lexflow
+          POSTGRES_DB: lexflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lexflow -d lexflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore LexFlow.sln
+
+      - name: Build
+        run: dotnet build LexFlow.sln --no-restore --configuration Release
+
+      - name: Unit tests
+        run: >
+          dotnet test tests/LexFlow.UnitTests --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --collect:"XPlat Code Coverage"
+
+      - name: Integration tests
+        env:
+          ConnectionStrings__LexFlowDatabase: "Host=localhost;Port=5432;Database=lexflow;Username=lexflow;Password=lexflow"
+          Redis__ConnectionString: "localhost:6379"
+        run: >
+          dotnet test tests/LexFlow.IntegrationTests --no-build --configuration Release
+          --logger "trx;LogFileName=integration-tests.trx"
+          --collect:"XPlat Code Coverage"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/*.trx"
+
+  sonarqube:
+    name: SonarQube quality gate
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: false # stub — enable once SONAR_TOKEN / SONAR_HOST_URL secrets are configured
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=lexflow-api
+            -Dsonar.qualitygate.wait=true
+
+  trivy:
+    name: Trivy container scan
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t lexflow-api:ci .
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "lexflow-api:ci"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+          ignore-unfixed: true

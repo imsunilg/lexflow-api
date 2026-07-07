@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-LexFlow.Workers-bb5c8579-9450-442b-a7c5-f6cc3290bd89</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.Core" Version="1.8.23" />
+    <PackageReference Include="Hangfire.NetCore" Version="1.8.23" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LexFlow.Application\LexFlow.Application.csproj" />
+    <ProjectReference Include="..\LexFlow.Infrastructure\LexFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\LexFlow.Domain\LexFlow.Domain.csproj" />
+  </ItemGroup>
+</Project>
