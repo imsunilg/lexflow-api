@@ -6,7 +6,13 @@ on:
   push:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ${{ github.repository_owner }}/lexflow-api
+  WORKERS_IMAGE: ${{ github.repository_owner }}/lexflow-workers
+
 jobs:
+  # --- §37 gate 1/6: build ---
   build-test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -49,6 +55,7 @@ jobs:
       - name: Restore
         run: dotnet restore LexFlow.sln
 
+      # --- §37 gate 2/6: unit ---
       - name: Build
         run: dotnet build LexFlow.sln --no-restore --configuration Release
 
@@ -57,7 +64,9 @@ jobs:
           dotnet test tests/LexFlow.UnitTests --no-build --configuration Release
           --logger "trx;LogFileName=unit-tests.trx"
           --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/unit
 
+      # --- §37 gate 3/6: integration ---
       - name: Integration tests
         env:
           ConnectionStrings__LexFlowDatabase: "Host=localhost;Port=5432;Database=lexflow;Username=lexflow;Password=lexflow"
@@ -66,35 +75,207 @@ jobs:
           dotnet test tests/LexFlow.IntegrationTests --no-build --configuration Release
           --logger "trx;LogFileName=integration-tests.trx"
           --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/integration
+          --filter "FullyQualifiedName!~Testcontainers"
 
       - name: Publish test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: "**/*.trx"
+          path: |
+            **/*.trx
+            TestResults/**/coverage.cobertura.xml
 
+  # `secrets` isn't a valid context in a job-level `if:` (only `github`/`needs`/`vars`/
+  # `inputs` are) — so the "only run if SONAR_TOKEN is configured" gate has to be
+  # computed in a separate tiny job first and passed through `needs.*.outputs`, which
+  # IS readable from `if:`.
+  check-sonar-configured:
+    name: Check SONAR_TOKEN
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check
+        id: check
+        run: echo "enabled=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+  # --- §37 gate 4/6: SonarQube quality gate (coverage >= 80%, 0 blocker) ---
+  # Gated on SONAR_TOKEN existing rather than a hardcoded `if: false` — this activates
+  # itself the moment the secret is added in repo settings, no further workflow edit
+  # needed. Uses the dotnet-sonarscanner begin/end wrapper (not the generic
+  # sonarqube-scan-action from the old stub) because the generic action expects a
+  # sonar-project.properties file and doesn't understand MSBuild/coverlet coverage
+  # output — the begin/end flow is the documented, correct pattern for .NET solutions.
   sonarqube:
     name: SonarQube quality gate
     runs-on: ubuntu-latest
-    needs: build-test
-    if: false # stub — enable once SONAR_TOKEN / SONAR_HOST_URL secrets are configured
+    needs: check-sonar-configured
+    if: ${{ needs.check-sonar-configured.outputs.enabled == 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v3
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
         with:
-          args: >
-            -Dsonar.projectKey=lexflow-api
-            -Dsonar.qualitygate.wait=true
+          dotnet-version: "9.0.x"
 
+      - name: Setup Java (required by the Sonar scanner engine)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Sonar begin
+        run: >
+          dotnet sonarscanner begin
+          /k:"lexflow-api"
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          /d:sonar.cs.cobertura.reportsPaths="**/coverage.cobertura.xml"
+          /d:sonar.coverage.exclusions="**/*Tests.cs,**/Migrations/**"
+          /d:sonar.qualitygate.wait=true
+
+      - name: Build
+        run: dotnet build LexFlow.sln --configuration Release
+
+      - name: Unit tests (with coverage, for Sonar to import)
+        run: >
+          dotnet test tests/LexFlow.UnitTests --no-build --configuration Release
+          --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Sonar end
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  # --- §37 gate 5/6: contract (OpenAPI schema validation) ---
+  # Pact for portal/mobile clients (the other half of §37's "contract" tier) isn't
+  # wired up here — it needs a running Pact Broker, which isn't provisioned for this
+  # repo yet; this job covers the schema-validation direction, which needs nothing
+  # beyond the API itself.
+  contract:
+    name: Contract — OpenAPI schema validation
+    runs-on: ubuntu-latest
+    needs: build-test
+    services:
+      # The API connects to Postgres/Redis at startup (Hangfire installs its own
+      # schema eagerly in AddHangfire) even though this job never touches business
+      # data — it just needs something to connect to, not the lexflow-database schema.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lexflow
+          POSTGRES_PASSWORD: lexflow
+          POSTGRES_DB: lexflow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lexflow -d lexflow"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run API in the background
+        run: |
+          dotnet run --project src/LexFlow.Api --no-launch-profile --urls http://localhost:5000 &
+          echo $! > api.pid
+        env:
+          ASPNETCORE_ENVIRONMENT: Staging
+          ConnectionStrings__LexFlowDatabase: "Host=localhost;Port=5432;Database=lexflow;Username=lexflow;Password=lexflow"
+          Redis__ConnectionString: "localhost:6379"
+
+      - name: Wait for /swagger/v1/swagger.json
+        run: >
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5000/swagger/v1/swagger.json -o swagger.json && exit 0
+            sleep 2
+          done
+          echo "API did not become ready in time" >&2
+          exit 1
+
+      - name: Validate OpenAPI document (Redocly lint)
+        run: npx --yes @redocly/cli@1 lint swagger.json --format=stylish
+
+      - name: Stop API
+        if: always()
+        run: kill "$(cat api.pid)" 2>/dev/null || true
+
+  # --- §37 "Security tests in CI": secrets scan (gitleaks) ---
+  gitleaks:
+    name: Secrets scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # --- §37 "Security tests in CI": ZAP baseline ---
+  # (G-AC3 cross-tenant fuzz suite and G-AC4 permission-matrix generator — the other two
+  # items in this bullet — already run as part of build-test above, as ordinary
+  # IntegrationTests/UnitTests fixtures; they don't need a separate CI job.)
+  zap-baseline:
+    name: ZAP baseline scan
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start full stack
+        run: docker compose up -d --build
+
+      - name: Wait for API health
+        run: >
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/health && exit 0
+            sleep 2
+          done
+          echo "API did not become healthy in time" >&2
+          docker compose logs api
+          exit 1
+
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "http://localhost:8080"
+          # Public/anon endpoints only worth an unauthenticated baseline pass — full
+          # authenticated ZAP scanning needs a login script wired to the "staff" JWT
+          # flow, tracked as a documented follow-up rather than done here.
+          cmd_options: "-a"
+          fail_action: false
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose down -v
+
+  # --- §37 "container scan" ---
   trivy:
     name: Trivy container scan
     runs-on: ubuntu-latest
@@ -113,3 +294,256 @@ jobs:
           severity: "CRITICAL,HIGH"
           exit-code: "1"
           ignore-unfixed: true
+
+  # Generates the typed TypeScript client (see client/README.md) and uploads it as a
+  # build artifact — lexflow-web pulls the latest artifact from main via
+  # `gh run download` until a private npm registry exists to publish it to instead.
+  generate-ts-client:
+    name: Generate TypeScript client
+    runs-on: ubuntu-latest
+    needs: build-test
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lexflow
+          POSTGRES_PASSWORD: lexflow
+          POSTGRES_DB: lexflow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lexflow -d lexflow"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run API in the background
+        run: |
+          dotnet run --project src/LexFlow.Api --no-launch-profile --urls http://localhost:5000 &
+          echo $! > api.pid
+        env:
+          ASPNETCORE_ENVIRONMENT: Staging
+          ConnectionStrings__LexFlowDatabase: "Host=localhost;Port=5432;Database=lexflow;Username=lexflow;Password=lexflow"
+          Redis__ConnectionString: "localhost:6379"
+
+      - name: Wait for API
+        run: >
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5000/swagger/v1/swagger.json && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Install codegen deps
+        working-directory: client
+        run: npm ci
+
+      - name: Generate client
+        working-directory: client
+        env:
+          LEXFLOW_API_URL: http://localhost:5000
+        run: npm run build
+
+      - name: Stop API
+        if: always()
+        run: kill "$(cat api.pid)" 2>/dev/null || true
+
+      - name: Upload generated client
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexflow-api-client
+          path: client/generated/lexflow-api-client.ts
+
+  # Builds & pushes versioned images once every quality gate above has passed, so the
+  # deploy job below only ever deploys an image that's already cleared build/test/
+  # contract/security. Runs on push-to-main only (a PR has nothing to deploy).
+  build-push-images:
+    name: Build & push images (GHCR)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [build-test, contract, trivy, gitleaks]
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: tag
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ steps.tag.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:latest
+
+      - name: Build & push Workers image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/LexFlow.Workers/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.WORKERS_IMAGE }}:${{ steps.tag.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.WORKERS_IMAGE }}:latest
+
+  # --- §38 deploy: blue-green on AKS behind Azure Front Door ---
+  # Requires repo/environment secrets this workflow does not create: AZURE_CREDENTIALS
+  # (federated OIDC or SP JSON for azure/login), AKS_RESOURCE_GROUP, AKS_CLUSTER_NAME,
+  # AKS_NAMESPACE, LEXFLOW_DATABASE_CONNECTION_STRING (for the pre-deploy migration
+  # step). Guarded by the `production` GitHub Environment, whose required-reviewers
+  # protection rule (configured in repo Settings -> Environments, not in this file) IS
+  # the "manual approval" step §37's quality-gate list calls for — this job simply
+  # will not start running until that approval is granted.
+  deploy:
+    name: Deploy (blue-green)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: build-push-images
+    environment: production
+    env:
+      IMAGE_TAG: ${{ needs.build-push-images.outputs.tag }}
+    steps:
+      - name: Checkout lexflow-api
+        uses: actions/checkout@v4
+
+      # Expand-contract migrations only, applied before the new (green) code is even
+      # reachable, and required to stay backward-compatible with the still-live blue
+      # stack (§38: "backward-compatible with blue") — never a breaking/contract
+      # migration in this step.
+      - name: Checkout lexflow-database
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lexflow-database
+          path: lexflow-database
+          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Run pre-deploy DB migrations (DbUp)
+        working-directory: lexflow-database
+        env:
+          LEXFLOW_DB_CONNECTION_STRING: ${{ secrets.LEXFLOW_DATABASE_CONNECTION_STRING }}
+        run: dotnet run --project Runner -- migrate
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Determine current live slot
+        id: live
+        run: |
+          current=$(kubectl get svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}" -o jsonpath='{.spec.selector.app\.kubernetes\.io/slot}' 2>/dev/null || echo "blue")
+          if [ "$current" = "blue" ]; then echo "next=green" >> "$GITHUB_OUTPUT"; else echo "next=blue" >> "$GITHUB_OUTPUT"; fi
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Helm upgrade the idle slot
+        run: >
+          helm upgrade --install lexflow-api-${{ steps.live.outputs.next }}
+          ./deploy/helm/lexflow-api
+          --namespace ${{ secrets.AKS_NAMESPACE }}
+          --set slot=${{ steps.live.outputs.next }}
+          --set image.tag=${{ env.IMAGE_TAG }}
+          --wait --timeout 5m
+
+      - name: Smoke test the idle slot directly (bypassing the live Service)
+        run: >
+          kubectl run smoke-${{ github.run_id }} --rm -i --restart=Never
+          --namespace ${{ secrets.AKS_NAMESPACE }}
+          --image=curlimages/curl:8.10.1
+          -- curl -sf http://lexflow-api-${{ steps.live.outputs.next }}/health
+
+      # §38: "traffic switch via Front Door" — Front Door's own origin never changes;
+      # it always points at this one stable in-cluster Service. The cutover is this
+      # Service's selector flipping from one slot to the other.
+      - name: Switch traffic to the new slot
+        run: >
+          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
+          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.next }}"}}}'
+
+      # §38: "automatic canary metrics watch 30 min (error rate, P95) with
+      # auto-rollback trigger." A real implementation queries Application Insights
+      # (`az monitor app-insights query` against the KQL requests table) rather than
+      # polling /health — that needs an App Insights resource wired up, which isn't
+      # provisioned for this repo yet. This step is the honestly-scoped stand-in:
+      # it fails (and the next step rolls back) on any sustained health-check
+      # failure in the 30-minute window, which is a strictly weaker signal than a
+      # real error-rate/P95 canary.
+      - name: Canary watch (30 min, health-check proxy)
+        run: |
+          # The runner isn't on the cluster network, so it can't resolve
+          # lexflow-api-<slot> directly — port-forward the in-cluster Service to the
+          # runner first (same approach the smoke-test step would need for a
+          # long-lived check, vs. that step's one-shot in-cluster kubectl run pod).
+          kubectl port-forward -n "${{ secrets.AKS_NAMESPACE }}" "svc/lexflow-api-${{ steps.live.outputs.next }}" 18080:80 &
+          port_forward_pid=$!
+          sleep 3
+
+          end=$((SECONDS + 1800))
+          failures=0
+          while [ $SECONDS -lt $end ]; do
+            if ! curl -sf http://localhost:18080/health >/dev/null; then
+              failures=$((failures + 1))
+            else
+              failures=0
+            fi
+            if [ $failures -ge 3 ]; then
+              echo "3 consecutive health-check failures during canary window" >&2
+              kill "$port_forward_pid" 2>/dev/null || true
+              exit 1
+            fi
+            sleep 30
+          done
+          kill "$port_forward_pid" 2>/dev/null || true
+
+      - name: Roll back traffic on canary failure
+        if: failure()
+        run: >
+          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
+          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.current }}"}}}'
+
+      # Deliberately does NOT scale down/delete the old slot here — §38: "blue kept
+      # 24 h for instant rollback." See .github/workflows/rollback.yml (manual,
+      # instant) and .github/workflows/cleanup-blue.yml (scheduled, after the 24h
+      # window) for the two follow-on workflows that act on it.

@@ -1,0 +1,14 @@
+{
+  "name": "@lexflow/api-client-codegen",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Generates the typed TypeScript client for lexflow-web from the LexFlow API's OpenAPI 3.1 document. Not published — this package only exists to pin the nswag devDependency and hold the generation scripts.",
+  "scripts": {
+    "fetch-spec": "node fetch-spec.mjs",
+    "generate": "nswag run nswag.json",
+    "build": "npm run fetch-spec && npm run generate"
+  },
+  "devDependencies": {
+    "nswag": "^14.7.1"
+  }
+}

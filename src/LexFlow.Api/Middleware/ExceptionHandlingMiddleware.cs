@@ -3,14 +3,15 @@ using System.Net;
 using System.Text.Json;
 using LexFlow.Api.Contracts;
 using LexFlow.Application.Common.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using ValidationException = LexFlow.Application.Common.Exceptions.ValidationException;
 
 namespace LexFlow.Api.Middleware;
 
 /// <summary>
 /// Single choke point mapping typed exceptions to the response envelope and HTTP
-/// semantics defined in PRD §17 (envelope) and §28 (error handling): every error
-/// carries a W3C traceparent-derived traceId; internals are never leaked on 500s.
+/// semantics defined in PRD §17 (envelope) and §28 (error handling table): every
+/// error carries a W3C traceparent-derived traceId; internals are never leaked on 500s.
 /// </summary>
 public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
@@ -32,16 +33,41 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
 
         var (statusCode, code, details) = exception switch
         {
+            // 400 — shape/validation.
             ValidationException validationException => (
                 HttpStatusCode.BadRequest,
                 "VALIDATION_FAILED",
                 validationException.Errors
                     .SelectMany(e => e.Value.Select(msg => new ApiErrorDetail { Field = e.Key, Code = msg }))
                     .ToArray()),
-            NotFoundException => (HttpStatusCode.NotFound, "NOT_FOUND", null),
-            ForbiddenAccessException => (HttpStatusCode.Forbidden, "FORBIDDEN", null),
-            DomainRuleException domainRuleException => (HttpStatusCode.UnprocessableEntity, domainRuleException.SubCode, null),
+
+            // 401 — authn.
             UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "UNAUTHENTICATED", null),
+
+            // 403 — authz (record exists but forbidden). Cross-tenant access instead
+            // throws NotFoundException (404) to prevent enumeration — see that type.
+            ForbiddenAccessException => (HttpStatusCode.Forbidden, "FORBIDDEN", null),
+
+            // 404 — not found, also used for cross-tenant access.
+            NotFoundException => (HttpStatusCode.NotFound, "NOT_FOUND", null),
+
+            // 409 — state/uniqueness/idempotent-replay.
+            ConflictException conflictException => (HttpStatusCode.Conflict, conflictException.Code, null),
+
+            // 412 — concurrency (ETag/If-Match on PUT of versioned aggregates).
+            ConcurrencyConflictException => (HttpStatusCode.PreconditionFailed, "PRECONDITION_FAILED", null),
+            DbUpdateConcurrencyException => (HttpStatusCode.PreconditionFailed, "PRECONDITION_FAILED", null),
+
+            // 402-style — Module 16 Error Handling: "quota exceeded -> 402-style AI_QUOTA_EXCEEDED with upgrade CTA."
+            AiQuotaExceededException => ((HttpStatusCode)402, "AI_QUOTA_EXCEEDED", null),
+
+            // 422 — domain rule (sub-coded: CONFLICT_OF_INTEREST_SUSPECTED, INSUFFICIENT_TRUST_BALANCE, ...).
+            DomainRuleException domainRuleException => (HttpStatusCode.UnprocessableEntity, domainRuleException.SubCode, null),
+
+            // 429 — rate limited.
+            RateLimitExceededException => ((HttpStatusCode)429, "RATE_LIMITED", null),
+
+            // 500 — no internals leaked; generic message + traceId.
             _ => (HttpStatusCode.InternalServerError, "SERVER_ERROR", null),
         };
 
@@ -52,6 +78,11 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         else
         {
             logger.LogWarning(exception, "Handled exception {Code}. traceId={TraceId}", code, traceId);
+        }
+
+        if (exception is RateLimitExceededException rateLimitExceeded)
+        {
+            context.Response.Headers.RetryAfter = rateLimitExceeded.RetryAfterSeconds.ToString();
         }
 
         var message = statusCode == HttpStatusCode.InternalServerError

@@ -1,0 +1,4918 @@
+{
+  "Roles": [
+    "admin",
+    "auditor",
+    "finance",
+    "hr",
+    "lawyer",
+    "owner",
+    "paralegal",
+    "partner",
+    "receptionist",
+    "senior_partner"
+  ],
+  "Endpoints": [
+    {
+      "Controller": "AiController",
+      "Action": "Chat",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/chat",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "Draft",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/draft",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "GenerateEmail",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/email",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "GetQuota",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/ai/quota",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "GetRiskAnalysis",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/ai/matters/{id:guid}/risk",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "GetSimilarMatters",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/ai/matters/{id:guid}/similar",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "GetTranscription",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/ai/transcriptions/{id:guid}",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "PredictNextHearing",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/ai/cases/{id:guid}/hearing-prediction",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "RecordFeedback",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/interactions/{id:guid}/feedback",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "Research",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/research",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "ReviewContract",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/contracts/{docId:guid}/review",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "SummarizeDocument",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/summarize/document/{id:guid}",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "SummarizeMatter",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/summarize/matter/{id:guid}",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "SummarizeMeeting",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/transcriptions/{id:guid}/summarize",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "AiController",
+      "Action": "Transcribe",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/ai/transcribe",
+      "RequiredPermission": "ai.use.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "BillingArrangementsController",
+      "Action": "Get",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/billing-arrangement",
+      "RequiredPermission": "rates.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "BillingArrangementsController",
+      "Action": "Set",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/billing-arrangement",
+      "RequiredPermission": "rates.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "BillingReportsController",
+      "Action": "GetAging",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/billing/aging",
+      "RequiredPermission": "invoices.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "BranchesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/branches",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "BranchesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/branches/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "BranchesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/branches",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "BranchesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/branches/{id:guid}",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "BranchesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/branches/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "AddReminder",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/calendar/events/{id:guid}/reminders",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "ConnectExternal",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/calendar/sync/{provider}/connect",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "CreateEvent",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/calendar/events",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "DeleteEvent",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/calendar/events/{id:guid}",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "Disconnect",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/calendar/sync/{provider}/disconnect/{accountId:guid}",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "Get",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/calendar",
+      "RequiredPermission": "calendar.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "GetEvent",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/calendar/events/{id:guid}",
+      "RequiredPermission": "calendar.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "GetFreeBusy",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/calendar/freebusy",
+      "RequiredPermission": "calendar.read.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "GetIcsToken",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/calendar/ics/token",
+      "RequiredPermission": "calendar.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "HandleOAuthCallback",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/calendar/sync/{provider}/callback",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "Push",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/calendar/sync/{provider}/push/{accountId:guid}/{eventId:guid}",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "RevokeIcsToken",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/calendar/ics/token",
+      "RequiredPermission": "calendar.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CalendarController",
+      "Action": "UpdateEvent",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/calendar/events/{id:guid}",
+      "RequiredPermission": "calendar.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddArgument",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/arguments",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddEvidence",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/evidence",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddHearing",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/hearings",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddOrder",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/orders",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddParty",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/parties",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "AddWitness",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/witnesses",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "ChangeStage",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/stage",
+      "RequiredPermission": "case.stage.update",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "DeleteParty",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/cases/{id:guid}/parties/{partyId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "FileAppeal",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/cases/{id:guid}/appeal",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetArguments",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/arguments",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetEvidence",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/evidence",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetHearings",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/hearings",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetOrders",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/orders",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetParties",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/parties",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "GetWitnesses",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/cases/{id:guid}/witnesses",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/cases/{id:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "UpdateParty",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/cases/{id:guid}/parties/{partyId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CasesController",
+      "Action": "UpdateWitness",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/cases/{id:guid}/witnesses/{witnessId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ChatController",
+      "Action": "ConvertToTask",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/chat/channels/messages/{messageId:guid}/convert-to-task",
+      "RequiredPermission": "comm.chat.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ChatController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/chat/channels",
+      "RequiredPermission": "comm.chat.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ChatController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/chat/channels",
+      "RequiredPermission": "comm.chat.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ChatController",
+      "Action": "GetMessages",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/chat/channels/{id:guid}/messages",
+      "RequiredPermission": "comm.chat.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ChatController",
+      "Action": "PostMessage",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/chat/channels/{id:guid}/messages",
+      "RequiredPermission": "comm.chat.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "AddAddress",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/addresses",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "AddContact",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/contacts",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "AddIdentityDocument",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/identity-documents",
+      "RequiredPermission": "clients.kyc.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "AddRelationship",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/relationships",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/clients/{id:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "DeleteAddress",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/clients/{id:guid}/addresses/{addressId:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "DeleteContact",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/clients/{id:guid}/contacts/{contactId:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetAddresses",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/addresses",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetCommunications",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/communications",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetContacts",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/contacts",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetIdentityDocuments",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/identity-documents",
+      "RequiredPermission": "clients.kyc.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetRelationships",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/relationships",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "GetSummary",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{id:guid}/summary",
+      "RequiredPermission": "clients.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "Merge",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/merge",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "ResendPortalInvite",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/portal-access/resend-invite",
+      "RequiredPermission": "clients.portal.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "SetPortalAccess",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/clients/{id:guid}/portal-access",
+      "RequiredPermission": "clients.portal.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/clients/{id:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "UpdateAddress",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/clients/{id:guid}/addresses/{addressId:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "UpdateContact",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/clients/{id:guid}/contacts/{contactId:guid}",
+      "RequiredPermission": "clients.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ClientsController",
+      "Action": "VerifyIdentityDocument",
+      "HttpMethods": [
+        "PATCH"
+      ],
+      "Route": "api/v1/clients/{id:guid}/identity-documents/{docId:guid}/verify",
+      "RequiredPermission": "clients.kyc.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommCallsController",
+      "Action": "ClickToCall",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/calls/click-to-call",
+      "RequiredPermission": "comm.calls.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommCallsController",
+      "Action": "GetForClient",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/calls/clients/{clientId:guid}",
+      "RequiredPermission": "comm.calls.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommCallsController",
+      "Action": "Log",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/calls",
+      "RequiredPermission": "comm.calls.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "Connect",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/email/accounts/connect",
+      "RequiredPermission": "comm.email.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "GetMessages",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/email/threads/{id:guid}/messages",
+      "RequiredPermission": "comm.email.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "GetThreads",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/email/threads",
+      "RequiredPermission": "comm.email.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "GetTriageQueue",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/email/threads/triage",
+      "RequiredPermission": "comm.email.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "LinkThread",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/email/threads/{id:guid}/link",
+      "RequiredPermission": "comm.email.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "OAuthCallback",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/email/accounts/callback",
+      "RequiredPermission": "comm.email.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommEmailController",
+      "Action": "Send",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/email/send",
+      "RequiredPermission": "comm.email.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommSmsController",
+      "Action": "GetForClient",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/sms/clients/{clientId:guid}",
+      "RequiredPermission": "comm.sms.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommSmsController",
+      "Action": "Send",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/sms/send",
+      "RequiredPermission": "comm.sms.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommTimelineController",
+      "Action": "Get",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/timeline",
+      "RequiredPermission": "comm.timeline.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommWhatsAppController",
+      "Action": "GetForClient",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/comm/whatsapp/clients/{clientId:guid}",
+      "RequiredPermission": "comm.whatsapp.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommWhatsAppController",
+      "Action": "OptIn",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/whatsapp/clients/{clientId:guid}/opt-in",
+      "RequiredPermission": "comm.whatsapp.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommWhatsAppController",
+      "Action": "OptOut",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/whatsapp/clients/{clientId:guid}/opt-out",
+      "RequiredPermission": "comm.whatsapp.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "CommWhatsAppController",
+      "Action": "Send",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/comm/whatsapp/send",
+      "RequiredPermission": "comm.whatsapp.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DepartmentsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/departments",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "DepartmentsController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/departments/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "DepartmentsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/departments",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "DepartmentsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/departments/{id:guid}",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "DepartmentsController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/departments/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "DocumentTemplatesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/templates",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentTemplatesController",
+      "Action": "Generate",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/templates/{id:guid}/generate",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentTemplatesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/templates",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentTemplatesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/templates/{id:guid}",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "AddVersion",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/{id:guid}/versions",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Bulk",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/bulk",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "CreateShareLink",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/{id:guid}/share-links",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/documents/{id:guid}",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Download",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/{id:guid}/download",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/{id:guid}",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "GetVersions",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/{id:guid}/versions",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Preview",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/{id:guid}/preview",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "RestoreVersion",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/{id:guid}/versions/{v:int}/restore",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "Search",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/documents/search",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "SendForSignature",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/documents/{id:guid}/signature",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DocumentsController",
+      "Action": "UpdateMetadata",
+      "HttpMethods": [
+        "PATCH"
+      ],
+      "Route": "api/v1/documents/{id:guid}",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "DunningController",
+      "Action": "GetSchedules",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/dunning/schedules",
+      "RequiredPermission": "invoices.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "DunningController",
+      "Action": "Mute",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/dunning/invoices/{invoiceId:guid}/mute",
+      "RequiredPermission": "invoices.update.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "lawyer",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "DunningController",
+      "Action": "UpsertSchedule",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/dunning/schedules",
+      "RequiredPermission": "invoices.update.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "EvidenceController",
+      "Action": "AddCustodyEvent",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/evidence/{id:guid}/custody",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "EvidenceController",
+      "Action": "GetCustodyChain",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/evidence/{id:guid}/custody",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/folders",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/folders/{id:guid}",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/folders",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/folders/{id:guid}",
+      "RequiredPermission": "documents.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "Move",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/folders/{id:guid}/move",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "FoldersController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/folders/{id:guid}",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "HearingsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/hearings/{id:guid}",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "HearingsController",
+      "Action": "GetCauseList",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/hearings",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "HearingsController",
+      "Action": "RecordOutcome",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/hearings/{id:guid}/outcome",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Approve",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/approve",
+      "RequiredPermission": "invoices.approve.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices",
+      "RequiredPermission": "invoices.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "lawyer",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "CreateBatch",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/batch",
+      "RequiredPermission": "invoices.create.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/invoices",
+      "RequiredPermission": "invoices.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/invoices/{id:guid}",
+      "RequiredPermission": "invoices.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "GetPdf",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/pdf",
+      "RequiredPermission": "invoices.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "GetStatusHistory",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/status-history",
+      "RequiredPermission": "invoices.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Reject",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/reject",
+      "RequiredPermission": "invoices.approve.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Send",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/send",
+      "RequiredPermission": "invoices.send.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Submit",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/submit",
+      "RequiredPermission": "invoices.update.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "lawyer",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/invoices/{id:guid}",
+      "RequiredPermission": "invoices.update.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "lawyer",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "InvoicesController",
+      "Action": "Void",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/invoices/{id:guid}/void",
+      "RequiredPermission": "invoices.void.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "AmendSection",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/sections/{id:guid}/amend",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "CreateAct",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/acts",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "CreateSection",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/acts/{id:guid}/sections",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetAct",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/acts/{id:guid}",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetActs",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/acts",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetSection",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/sections/{id:guid}",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetSectionAsOf",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/acts/{actId:guid}/sections/{number}/as-of",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetSectionHistory",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/acts/{actId:guid}/sections/{number}/history",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "GetSections",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/acts/{id:guid}/sections",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "LookupSection",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/sections/lookup",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbActsController",
+      "Action": "UpdateAct",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/kb/acts/{id:guid}",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "Approve",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/approve",
+      "RequiredPermission": "kb.review.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "AssignReviewer",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/assign-reviewer",
+      "RequiredPermission": "kb.review.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/articles",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "GetVersions",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/versions",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "Publish",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/publish",
+      "RequiredPermission": "kb.review.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "SendBackToDraft",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/send-back",
+      "RequiredPermission": "kb.review.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "Submit",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}/submit",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbArticlesController",
+      "Action": "UpdateDraft",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/kb/articles/{id:guid}",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/judgments",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/judgments/{id:guid}",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "GetPinCount",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/judgments/{id:guid}/pin-count",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "RetryExtraction",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/judgments/{id:guid}/retry-extraction",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/kb/judgments/{id:guid}",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "UpdateHeadnote",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/kb/judgments/{id:guid}/headnote",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbJudgmentsController",
+      "Action": "Upload",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/judgments",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbMatterPinsController",
+      "Action": "GetForMatter",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/kb-pins",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbMatterPinsController",
+      "Action": "Pin",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/kb-pins",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbMatterPinsController",
+      "Action": "Unpin",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/kb-pins/{pinId:guid}",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbSearchController",
+      "Action": "Search",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/search",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "AddBookmark",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/bookmarks",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "AddToCollection",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/collections/{id:guid}/items",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "AttachTag",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/tags/attach",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "CreateCollection",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/collections",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "DetachTag",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/kb/tags/detach",
+      "RequiredPermission": "kb.contribute.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "GetBookmarks",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/bookmarks",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "GetCollectionItems",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/collections/{id:guid}/items",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "GetCollections",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/collections",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "GetTags",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/kb/tags",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "KbTaxonomyController",
+      "Action": "RemoveBookmark",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/kb/bookmarks",
+      "RequiredPermission": "kb.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "AddActivity",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/{id:guid}/activities",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Assign",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/{id:guid}/assign",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "ChangeStage",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/{id:guid}/stage",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "CheckDuplicates",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/check-duplicates",
+      "RequiredPermission": "leads.create.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Convert",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/{id:guid}/convert",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads",
+      "RequiredPermission": "leads.create.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/leads/{id:guid}",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Export",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/leads/export",
+      "RequiredPermission": "leads.export.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/leads",
+      "RequiredPermission": "leads.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/leads/{id:guid}",
+      "RequiredPermission": "leads.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "GetImportBatch",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/leads/import/{batchId:guid}",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Import",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/import",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "MarkLost",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/leads/{id:guid}/lost",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LeadsController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/leads/{id:guid}",
+      "RequiredPermission": "leads.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "LegalLookupsController",
+      "Action": "GetCourts",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/legal-lookups/courts",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LegalLookupsController",
+      "Action": "GetJudges",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/legal-lookups/judges",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LegalLookupsController",
+      "Action": "GetPracticeAreas",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/legal-lookups/practice-areas",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "LoginHistoryController",
+      "Action": "Get",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/login-history",
+      "RequiredPermission": "audit.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "auditor",
+        "finance",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "AddExpense",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/expenses",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "AddImportantDate",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/important-dates",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "AddParty",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/parties",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "AddRelated",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/related",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "AddTeamMember",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/team",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "ChangeStatus",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/status",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "ConflictCheck",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/conflict-check",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "CreateCase",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/cases",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "DeleteImportantDate",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/matters/{id:guid}/important-dates/{dateId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "DeleteParty",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/matters/{id:guid}/parties/{partyId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetCases",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{matterId:guid}/cases",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetExpenses",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/expenses",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetFinancialSummary",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/financial-summary",
+      "RequiredPermission": "billing.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetImportantDates",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/important-dates",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetParties",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/parties",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetTeam",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/team",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "GetTimeline",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/matters/{id:guid}/timeline",
+      "RequiredPermission": "matters.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "RemoveTeamMember",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/matters/{id:guid}/team/{userId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/matters/{id:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "UpdateImportantDate",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/matters/{id:guid}/important-dates/{dateId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "MattersController",
+      "Action": "UpdateParty",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/matters/{id:guid}/parties/{partyId:guid}",
+      "RequiredPermission": "matters.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "NotificationsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/notifications",
+      "RequiredPermission": "notifications.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "NotificationsController",
+      "Action": "MarkRead",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/notifications/{id:guid}/read",
+      "RequiredPermission": "notifications.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "NumberSeriesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/number-series",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "NumberSeriesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/settings/number-series/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "NumberSeriesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/number-series",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "NumberSeriesController",
+      "Action": "PreviewNext",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/number-series/{id:guid}/preview",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "NumberSeriesController",
+      "Action": "UpdatePattern",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/settings/number-series/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "ApplyCreditNote",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/credit-notes/{id:guid}/apply",
+      "RequiredPermission": "invoices.update.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "CreateCreditNote",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/credit-notes",
+      "RequiredPermission": "invoices.update.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "CreateRefund",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/refunds",
+      "RequiredPermission": "payments.refund.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/payments/{id:guid}",
+      "RequiredPermission": "payments.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "GetForClient",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{clientId:guid}/payments",
+      "RequiredPermission": "payments.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "GetStatement",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/clients/{clientId:guid}/statement",
+      "RequiredPermission": "invoices.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "PaymentsController",
+      "Action": "Record",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/payments",
+      "RequiredPermission": "payments.record.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "PermissionsController",
+      "Action": "GetCatalog",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/permissions/catalog",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "RateCardsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/rate-cards",
+      "RequiredPermission": "rates.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "RateCardsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/rate-cards",
+      "RequiredPermission": "rates.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "RateCardsController",
+      "Action": "UpsertEntry",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/rate-cards/{id:guid}/entries",
+      "RequiredPermission": "rates.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "CreateCustom",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/reports/custom",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "CreateSchedule",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/reports/schedule",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "Export",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/reports/export/{runId:guid}",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "GetCatalog",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/reports/catalog",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "GetCustomReports",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/reports/custom",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "GetRun",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/reports/runs/{jobId:guid}",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "GetSchedules",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/reports/schedules",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "RunCustom",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/reports/custom/{id:guid}/run",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "RunStandard",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/reports/{key}/run",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "ReportsController",
+      "Action": "UpdateCustom",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/reports/custom/{id:guid}",
+      "RequiredPermission": "reports.operational.own",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "RolesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/roles",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "RolesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/roles",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "RolesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/roles/{id:guid}",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "RolesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/roles/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SessionsController",
+      "Action": "Revoke",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/sessions/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "GetAudit",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/audit",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "GetGateways",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/gateways",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "GetSection",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/{section}",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "PutSection",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/settings/{section}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "SyncWhatsAppTemplates",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/whatsapp/sync-templates",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "TestSms",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/sms/test",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "TestSmtp",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/smtp/test",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "TestWhatsApp",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/whatsapp/test",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "SettingsController",
+      "Action": "VerifyGateway",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/gateways/{provider}/verify",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "ShareLinksController",
+      "Action": "Revoke",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/share-links/{id:guid}",
+      "RequiredPermission": "documents.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "TaskTemplatesController",
+      "Action": "ApplyToMatter",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/matters/{id:guid}/apply-task-template/{templateId:guid}",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TaskTemplatesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/task-templates",
+      "RequiredPermission": "tasks.templates.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "TaskTemplatesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/task-templates",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "AddAssignee",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/assignees",
+      "RequiredPermission": "tasks.assign.others",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "AddChecklistItem",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/checklist",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "AddComment",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/comments",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "AddDependency",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/dependencies",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/tasks/{id:guid}",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetAssignees",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/assignees",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/{id:guid}",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetChecklist",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/checklist",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetComments",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/comments",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetDependencies",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/dependencies",
+      "RequiredPermission": "tasks.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "GetWorkload",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/tasks/workload",
+      "RequiredPermission": "tasks.read.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "Parse",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/parse",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "RemoveAssignee",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/assignees/{userId:guid}",
+      "RequiredPermission": "tasks.assign.others",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "RemoveDependency",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/dependencies/{dependsOnTaskId:guid}",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "SetChecklistItemDone",
+      "HttpMethods": [
+        "PATCH"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/checklist/{itemId:guid}",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "SetStatus",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/tasks/{id:guid}/status",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TasksController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/tasks/{id:guid}",
+      "RequiredPermission": "tasks.manage.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "hr",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "receptionist",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TaxRatesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/tax-rates",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TaxRatesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/settings/tax-rates/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TaxRatesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/tax-rates",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TaxRatesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/settings/tax-rates/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TeamsController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/teams",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TeamsController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/teams/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TeamsController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/teams",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TeamsController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/teams/{id:guid}",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TeamsController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/teams/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TemplatesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/settings/templates",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TemplatesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/settings/templates/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TemplatesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/settings/templates",
+      "RequiredPermission": "settings.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TemplatesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/settings/templates/{id:guid}",
+      "RequiredPermission": "settings.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Approve",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/time-entries/approve",
+      "RequiredPermission": "time_entries.approve.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/time-entries",
+      "RequiredPermission": "time_entries.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/time-entries/{id:guid}",
+      "RequiredPermission": "time_entries.delete.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/time-entries",
+      "RequiredPermission": "time_entries.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/time-entries/{id:guid}",
+      "RequiredPermission": "time_entries.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Reject",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/time-entries/reject",
+      "RequiredPermission": "time_entries.approve.team",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Submit",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/time-entries/submit",
+      "RequiredPermission": "time_entries.update.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimeEntriesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/time-entries/{id:guid}",
+      "RequiredPermission": "time_entries.update.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimersController",
+      "Action": "GetCurrent",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/timers/current",
+      "RequiredPermission": "time_entries.read.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor",
+        "finance",
+        "lawyer",
+        "owner",
+        "paralegal",
+        "partner",
+        "senior_partner"
+      ]
+    },
+    {
+      "Controller": "TimersController",
+      "Action": "Pause",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/timers/pause",
+      "RequiredPermission": "time_entries.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimersController",
+      "Action": "Resume",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/timers/resume",
+      "RequiredPermission": "time_entries.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimersController",
+      "Action": "Start",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/timers/start",
+      "RequiredPermission": "time_entries.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TimersController",
+      "Action": "Stop",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/timers/stop",
+      "RequiredPermission": "time_entries.create.own",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "lawyer",
+        "paralegal"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "Deposit",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/trust/{clientId:guid}/deposits",
+      "RequiredPermission": "trust.deposit.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "Disburse",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/trust/{clientId:guid}/disbursements",
+      "RequiredPermission": "trust.disburse.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "GetAccount",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/trust/{clientId:guid}",
+      "RequiredPermission": "trust.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "GetExceptions",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/trust/reconciliations/{id:guid}/exceptions",
+      "RequiredPermission": "trust.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "GetLedger",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/trust/{clientId:guid}/ledger",
+      "RequiredPermission": "trust.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "ImportReconciliation",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/trust/reconciliations",
+      "RequiredPermission": "trust.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "Reverse",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/trust/entries/{ledgerEntryId:guid}/reverse",
+      "RequiredPermission": "trust.deposit.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "finance",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "TrustController",
+      "Action": "SignOffReconciliation",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/trust/reconciliations/{id:guid}/signoff",
+      "RequiredPermission": "trust.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "Deactivate",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/users/{id:guid}/deactivate",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/users",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/users/{id:guid}",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "GetEffectivePermissions",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/users/{id:guid}/effective-permissions",
+      "RequiredPermission": "users.read.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "GetSessions",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/users/{id:guid}/sessions",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "GetUnresolvedAssignments",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/users/{id:guid}/unresolved-assignments",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "Invite",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/users/invite",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "Reactivate",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/users/{id:guid}/reactivate",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "Suspend",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/users/{id:guid}/suspend",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "UsersController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/users/{id:guid}",
+      "RequiredPermission": "users.manage.all",
+      "IsWellFormed": true,
+      "AllowedRoles": [
+        "admin",
+        "hr",
+        "owner"
+      ]
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "Create",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/workflow-rules",
+      "RequiredPermission": "workflow.rules.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "Delete",
+      "HttpMethods": [
+        "DELETE"
+      ],
+      "Route": "api/v1/workflow-rules/{id:guid}",
+      "RequiredPermission": "workflow.rules.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "GetAll",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/workflow-rules",
+      "RequiredPermission": "workflow.rules.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "GetById",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/workflow-rules/{id:guid}",
+      "RequiredPermission": "workflow.rules.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "GetRuns",
+      "HttpMethods": [
+        "GET"
+      ],
+      "Route": "api/v1/workflow-rules/{id:guid}/runs",
+      "RequiredPermission": "workflow.rules.read",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "SeedDefaults",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/workflow-rules/seed-defaults",
+      "RequiredPermission": "workflow.rules.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "Test",
+      "HttpMethods": [
+        "POST"
+      ],
+      "Route": "api/v1/workflow-rules/{id:guid}/test",
+      "RequiredPermission": "workflow.rules.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    },
+    {
+      "Controller": "WorkflowRulesController",
+      "Action": "Update",
+      "HttpMethods": [
+        "PUT"
+      ],
+      "Route": "api/v1/workflow-rules/{id:guid}",
+      "RequiredPermission": "workflow.rules.manage",
+      "IsWellFormed": true,
+      "AllowedRoles": []
+    }
+  ]
+}

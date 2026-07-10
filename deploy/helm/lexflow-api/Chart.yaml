@@ -1,0 +1,11 @@
+apiVersion: v2
+name: lexflow-api
+description: >-
+  LexFlow API (staff + portal) and Workers (Hangfire background jobs), deployed together
+  since both are stateless consumers of the same Postgres/Redis/blob/ES backends.
+  PRD §38: deployed twice per release under two "slot" values (blue/green) so
+  api-ci.yml's deploy job can stand up green, smoke test it, then flip the Service
+  selector to route traffic — see values.yaml's `slot` field.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

@@ -10,6 +10,7 @@ services:
       ConnectionStrings__LexFlowDatabase: "Host=postgres;Port=5432;Database=lexflow;Username=postgres;Password=postgres"
       Redis__ConnectionString: "redis:6379"
       Elasticsearch__Uri: "http://elasticsearch:9200"
+      BlobStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
     depends_on:
       postgres:
         condition: service_healthy
@@ -17,6 +18,28 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
+      azurite:
+        condition: service_started
+
+  workers:
+    build:
+      context: .
+      dockerfile: src/LexFlow.Workers/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__LexFlowDatabase: "Host=postgres;Port=5432;Database=lexflow;Username=postgres;Password=postgres"
+      Redis__ConnectionString: "redis:6379"
+      Elasticsearch__Uri: "http://elasticsearch:9200"
+      BlobStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      azurite:
+        condition: service_started
 
   postgres:
     image: postgres:16
@@ -62,7 +85,16 @@ services:
       timeout: 5s
       retries: 10
 
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.33.0
+    command: "azurite --blobHost 0.0.0.0 --blobPort 10000 --location /data --skipApiVersionCheck"
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite-data:/data
+
 volumes:
   postgres-data:
   redis-data:
   es-data:
+  azurite-data:

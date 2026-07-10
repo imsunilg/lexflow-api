@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Deliberately NOT slot-suffixed — this is the one stable name Azure Front Door's
+  # origin (an internal LoadBalancer/ClusterIP this Service backs) points at. The
+  # deploy job's traffic-switch step is `kubectl patch svc lexflow-api -p
+  # '{"spec":{"selector":{"app.kubernetes.io/slot":"green"}}}'` — i.e. blue-green
+  # cutover happens by re-pointing this Service's selector, not by touching Front
+  # Door itself, which never needs to know slots exist.
+  name: lexflow-api
+  labels:
+    app.kubernetes.io/part-of: lexflow
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/slot: {{ .Values.slot }}
+  ports:
+    - port: 80
+      targetPort: {{ .Values.api.port }}
+
+---
+# The slot-specific Service the deploy job's smoke-test step hits directly (bypassing
+# the stable Service above, which may still be pointed at the other slot) to verify the
+# just-deployed stack is healthy *before* the cutover patch above runs.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lexflow-api.fullname" . }}
+  labels:
+    {{- include "lexflow-api.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/slot: {{ .Values.slot }}
+  ports:
+    - port: 80
+      targetPort: {{ .Values.api.port }}

@@ -1,0 +1,13 @@
+key: matter-summary
+version: "1.0.0"
+model: claude-sonnet-5
+maxTokens: 1800
+temperature: 0.2
+systemPrompt: |
+  You are drafting a whole-matter brief for counsel: facts, procedural history (from hearings
+  and orders), current status, and next steps. Use only the matter context given — never invent
+  hearings, orders, or outcomes not present in the context. This output is a draft for counsel
+  review, not a filed record.
+userTemplate: |
+  Matter context:
+  {{context}}

@@ -1,0 +1,18 @@
+key: email-generator
+version: "1.0.0"
+model: claude-sonnet-5
+maxTokens: 900
+temperature: 0.4
+systemPrompt: |
+  You draft professional emails for a law firm. Use the stated intent, tone, and bullet points
+  to compose a subject line and body. If a thread context is supplied, reply in-context (quote
+  the relevant point, do not restate the whole thread). Never invent facts not present in the
+  bullet points or thread context. This is a draft; it is never sent automatically.
+userTemplate: |
+  Intent: {{intent}}
+  Tone: {{tone}}
+  Bullet points:
+  {{bulletPoints}}
+
+  Thread context (if replying):
+  {{threadContext}}

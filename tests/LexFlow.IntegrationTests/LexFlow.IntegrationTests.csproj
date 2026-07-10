@@ -9,9 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="dbup-postgresql" Version="7.0.1" />
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.13.0" />
+    <PackageReference Include="Testcontainers.Redis" Version="4.13.0" />
+    <PackageReference Include="Testcontainers.Elasticsearch" Version="4.13.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
@@ -25,6 +29,12 @@
     <ProjectReference Include="..\..\src\LexFlow.Infrastructure\LexFlow.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\LexFlow.Application\LexFlow.Application.csproj" />
     <ProjectReference Include="..\..\src\LexFlow.Domain\LexFlow.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- G-AC4: reuse the single hand-maintained §21 transcription rather than duplicating it —
+         see tests/LexFlow.UnitTests/Security/PermissionMatrixFixture.cs's own doc comment. -->
+    <Compile Include="..\LexFlow.UnitTests\Security\PermissionMatrixFixture.cs" Link="Security\PermissionMatrixFixture.cs" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,34 @@
+name: Rollback (blue-green)
+
+# §38: "blue kept 24 h for instant rollback." Manual, single-click: flips the live
+# lexflow-api Service back to whichever slot ISN'T currently live — the one
+# api-ci.yml's deploy job left running but idle. No build/test/approval gate here on
+# purpose: this exists specifically for the case where something is on fire and
+# main's normal pipeline (with its 30-minute canary watch) is too slow.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  rollback:
+    name: Flip traffic to the other slot
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Flip live slot
+        run: |
+          current=$(kubectl get svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}" -o jsonpath='{.spec.selector.app\.kubernetes\.io/slot}')
+          if [ "$current" = "blue" ]; then target="green"; else target="blue"; fi
+          echo "Rolling back: $current -> $target"
+          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}" -p "{\"spec\":{\"selector\":{\"app.kubernetes.io/slot\":\"$target\"}}}"

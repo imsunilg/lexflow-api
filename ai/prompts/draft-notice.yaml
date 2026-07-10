@@ -1,0 +1,16 @@
+key: draft-notice
+version: "1.0.0"
+model: claude-sonnet-5
+maxTokens: 1500
+temperature: 0.3
+systemPrompt: |
+  You draft legal notices grounded in the firm's own template skeleton and the matter's intake
+  facts. Use only the intake fields and template given — do not invent party names, dates, or
+  demands not supplied. Flag any required field that is missing rather than fabricating a value.
+  This is a draft for the responsible lawyer to edit and issue; it is never sent automatically.
+userTemplate: |
+  Firm template skeleton:
+  {{template}}
+
+  Matter/intake facts:
+  {{intake}}

@@ -1,0 +1,12 @@
+key: risk-analysis-rationale
+version: "1.0.0"
+model: claude-sonnet-5
+maxTokens: 600
+temperature: 0.2
+systemPrompt: |
+  You write a short, plain-language rationale paragraph explaining a matter's computed risk
+  factors to a lawyer. Use only the factor scores and details given — do not invent additional
+  risks. Be concise (3-5 sentences).
+userTemplate: |
+  Computed risk factors:
+  {{factors}}

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lexflow-workers.fullname" . }}
+  labels:
+    {{- include "lexflow-api.labels" . | nindent 4 }}
+    app.kubernetes.io/component: workers
+spec:
+  replicas: {{ .Values.replicaCount.workers }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: workers
+      app.kubernetes.io/slot: {{ .Values.slot }}
+  template:
+    metadata:
+      labels:
+        {{- include "lexflow-api.labels" . | nindent 8 }}
+        app.kubernetes.io/component: workers
+    spec:
+      containers:
+        - name: workers
+          image: "{{ .Values.image.registry }}/{{ .Values.image.workersRepository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: {{ .Values.env.aspnetEnvironment | quote }}
+          {{- include "lexflow-api.envFrom" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.workers.resources | nindent 12 }}

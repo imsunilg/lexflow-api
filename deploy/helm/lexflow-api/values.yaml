@@ -1,0 +1,42 @@
+# Overridden per deploy by api-ci.yml's `helm upgrade --install ... --set` flags —
+# these are dev-shaped defaults so `helm template`/`helm lint` work standalone.
+
+# "blue" or "green" — appended to every resource name so both stacks can run
+# side by side during a blue-green cutover (PRD §38). Never "prod" directly; the
+# Service (which IS the stable name traffic-facing components/Front Door point at)
+# is switched between slots by patching its selector, not by renaming it.
+slot: blue
+
+image:
+  registry: ghcr.io
+  repository: lexflow-org/lexflow-api
+  workersRepository: lexflow-org/lexflow-workers
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount:
+  api: 2
+  workers: 1
+
+api:
+  port: 8080
+  resources:
+    requests: { cpu: 250m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+workers:
+  resources:
+    requests: { cpu: 250m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+# Non-secret config only. Connection strings / JWT keys / KeyVault URI come from
+# Azure App Configuration + Key Vault refs (PRD §38 "Config" bullet) via an
+# ExternalSecret/AppConfig-synced Secret named `lexflow-api-secrets`, created by
+# infra tooling outside this chart's scope — the Deployment templates reference
+# it by name (see templates/_helpers.tpl's `lexflow-api.envFrom`).
+env:
+  aspnetEnvironment: Production
+  otlpEndpoint: "http://otel-collector.observability.svc.cluster.local:4317"
+
+ingress:
+  enabled: false # traffic arrives via Azure Front Door -> internal LB Service, not a cluster Ingress.

@@ -1,0 +1,113 @@
+[
+  {
+    "name": "Lead round-robin + SLA breach escalation",
+    "triggerEvent": "lead.created",
+    "conditions": {},
+    "actions": [
+      { "type": "assign", "pool": [], "targetField": "ownerId" },
+      { "type": "notify", "kind": "lead.assigned", "title": "New lead assigned", "channels": ["InApp", "Push", "Email"], "targetField": "ownerId" }
+    ],
+    "runOrder": 1
+  },
+  {
+    "name": "Hearing reminder policy (T-7/1/day-of multi-channel)",
+    "triggerEvent": "hearing.scheduled",
+    "conditions": {},
+    "actions": [
+      { "type": "notify", "kind": "hearing.reminder", "title": "Upcoming hearing", "channels": ["Email", "Push", "InApp"], "targetField": "ownerId" }
+    ],
+    "runOrder": 2
+  },
+  {
+    "name": "Invoice dunning sequence",
+    "triggerEvent": "invoice.overdue",
+    "conditions": {},
+    "actions": [
+      { "type": "notify", "kind": "invoice.dunning", "title": "Invoice payment reminder", "channels": ["Email", "WhatsApp"], "targetField": "clientOwnerId" }
+    ],
+    "runOrder": 3
+  },
+  {
+    "name": "Task overdue nudge + manager escalation",
+    "triggerEvent": "task.overdue",
+    "conditions": { "or": [{ "field": "overdueHours", "op": "eq", "value": 0 }, { "field": "overdueHours", "op": "eq", "value": 24 }] },
+    "actions": [
+      { "type": "notify", "kind": "task.overdue", "title": "Task overdue", "channels": ["InApp", "Push"], "targetField": "ownerId" },
+      { "type": "escalate", "title": "Task overdue 24h+", "toField": "ownerId" }
+    ],
+    "runOrder": 4
+  },
+  {
+    "name": "Limitation-date escalation chain (BR-2)",
+    "triggerEvent": "matter.limitation_date.approaching",
+    "conditions": {},
+    "actions": [
+      { "type": "notify", "kind": "limitation.escalation", "title": "Limitation date approaching", "channels": ["Email", "Push", "InApp", "SMS"], "targetField": "ownerId", "mandatory": true }
+    ],
+    "runOrder": 5
+  },
+  {
+    "name": "New client welcome + portal invite",
+    "triggerEvent": "client.created",
+    "conditions": {},
+    "actions": [
+      { "type": "notify", "kind": "client.welcome", "title": "Welcome to LexFlow", "channels": ["Email"], "targetField": "ownerId" }
+    ],
+    "runOrder": 6
+  },
+  {
+    "name": "Time entries pending approval > 7 days digest",
+    "triggerEvent": "time_entry.pending_approval_stale",
+    "conditions": {},
+    "actions": [
+      { "type": "notify", "kind": "time_entry.approval_digest", "title": "Time entries awaiting approval", "channels": ["InApp", "Push", "Email"], "targetField": "approverId" }
+    ],
+    "runOrder": 7
+  },
+  {
+    "name": "Trust balance below replenishment threshold",
+    "triggerEvent": "trust.balance.low",
+    "conditions": {},
+    "actions": [
+      { "type": "create_task", "title": "Draft replenishment invoice", "category": "Filing", "dueInDays": 2, "ownerField": "financeOwnerId" }
+    ],
+    "runOrder": 8
+  },
+  {
+    "name": "Portal document upload -> owner review task",
+    "triggerEvent": "document.uploaded",
+    "conditions": { "field": "uploadedByPortal", "op": "eq", "value": true },
+    "actions": [
+      { "type": "notify", "kind": "document.portal_upload", "title": "Client uploaded a document", "channels": ["InApp", "Push"], "targetField": "matterOwnerId" },
+      { "type": "create_task", "title": "Review client-uploaded document", "category": "Admin", "dueInDays": 2, "ownerField": "matterOwnerId" }
+    ],
+    "runOrder": 9
+  },
+  {
+    "name": "Matter inactivity 30 days check-in",
+    "triggerEvent": "matter.inactivity_30d",
+    "conditions": {},
+    "actions": [
+      { "type": "create_task", "title": "Matter check-in — no recent activity", "category": "Follow-up", "dueInDays": 3, "ownerField": "ownerId" }
+    ],
+    "runOrder": 10
+  },
+  {
+    "name": "Invoice threshold / write-down partner approval",
+    "triggerEvent": "invoice.submitted",
+    "conditions": { "or": [{ "field": "amount", "op": "gt", "value": 100000 }, { "field": "writeDownPct", "op": "gt", "value": 25 }] },
+    "actions": [
+      { "type": "notify", "kind": "invoice.approval_needed", "title": "Invoice needs partner approval", "channels": ["InApp", "Push", "Email"], "targetField": "approverId", "mandatory": true }
+    ],
+    "runOrder": 11
+  },
+  {
+    "name": "Hearing sine-die weekly review",
+    "triggerEvent": "hearing.outcome_recorded",
+    "conditions": { "field": "sineDie", "op": "eq", "value": true },
+    "actions": [
+      { "type": "notify", "kind": "hearing.sine_die_review", "title": "Case sine die — weekly review due", "channels": ["InApp"], "targetField": "ownerId" }
+    ],
+    "runOrder": 12
+  }
+]

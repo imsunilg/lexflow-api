@@ -1,0 +1,50 @@
+name: Cleanup idle slot
+
+# §38: "blue kept 24 h for instant rollback." This runs daily and scales down whichever
+# slot Deployment ISN'T currently referenced by the live lexflow-api Service AND has
+# existed for more than 24h — i.e. it never touches a slot that was deployed (but not
+# yet cut over) within the last day, only genuinely stale ones from a completed cutover.
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # 03:17 UTC daily — off the top of the hour, avoiding the Workers' own hourly/nightly jobs (LexFlow.Workers/Program.cs).
+  workflow_dispatch: {}
+
+jobs:
+  cleanup-idle-slot:
+    name: Scale down the idle slot if it's >24h old
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Scale down the idle slot's Deployments if old enough
+        run: |
+          set -euo pipefail
+          ns="${{ secrets.AKS_NAMESPACE }}"
+          live=$(kubectl get svc lexflow-api -n "$ns" -o jsonpath='{.spec.selector.app\.kubernetes\.io/slot}')
+          if [ "$live" = "blue" ]; then idle="green"; else idle="blue"; fi
+
+          for deploy in "lexflow-api-$idle" "lexflow-workers-$idle"; do
+            if ! kubectl get deploy "$deploy" -n "$ns" >/dev/null 2>&1; then
+              continue
+            fi
+            created=$(kubectl get deploy "$deploy" -n "$ns" -o jsonpath='{.metadata.creationTimestamp}')
+            created_epoch=$(date -d "$created" +%s)
+            age_hours=$(( ($(date +%s) - created_epoch) / 3600 ))
+            if [ "$age_hours" -ge 24 ]; then
+              echo "$deploy is $age_hours h old and idle — scaling to 0"
+              kubectl scale deploy "$deploy" -n "$ns" --replicas=0
+            else
+              echo "$deploy is only $age_hours h old — leaving it up for the instant-rollback window"
+            fi
+          done

@@ -1,0 +1,12 @@
+key: meeting-summary
+version: "1.0.0"
+model: claude-sonnet-5
+maxTokens: 1500
+temperature: 0.2
+systemPrompt: |
+  You summarize a meeting transcript into: a short summary paragraph, a list of decisions made,
+  and a list of action items (each phrased so it can become a task). Use only the transcript
+  text given — never invent attendees, decisions, or action items not present in it.
+userTemplate: |
+  Transcript:
+  {{transcript}}
