@@ -18,6 +18,13 @@ RUN dotnet publish src/LexFlow.Api/LexFlow.Api.csproj -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
+# curl isn't in the base aspnet runtime image (it's deliberately minimal) —
+# installed so `HEALTHCHECK`/compose healthchecks can hit /health from
+# inside the container (see docker-compose.full.yml, which gates the web
+# dev servers on this service being reported healthy).
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd -r lexflow && useradd -r -g lexflow lexflow
 USER lexflow
 

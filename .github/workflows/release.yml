@@ -1,0 +1,417 @@
+name: Release (staging gate -> blue-green production)
+
+# PRD §38 / Build Playbook E-2: "merge to main -> staging auto-deploy ->
+# E2E+k6 -> release tag -> prod deploy blue-green." Triggers once API CI
+# has already built+pushed images for a commit on main (see api-ci.yml's
+# `build-push-images` job) — this workflow never builds anything itself,
+# it deploys what API CI already produced, gates that deployment with the
+# D-18 Playwright suite and the C-15 staging smoke tests, and only then
+# promotes to the blue-green production deploy (moved here from api-ci.yml,
+# unchanged otherwise).
+on:
+  workflow_run:
+    workflows: ["API CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  resolve-image-tag:
+    name: Resolve image tag
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Compute image tag from the triggering commit
+        id: tag
+        run: echo "tag=${head_sha:0:12}" >> "$GITHUB_OUTPUT"
+        env:
+          head_sha: ${{ github.event.workflow_run.head_sha }}
+
+  # Step 1: DB Runner as a pre-deploy job against the managed Postgres
+  # Flexible Server (PRD §38's literal wording). lexflow-database's own
+  # db-migrate.yml also auto-deploys to staging independently on its own
+  # pushes — running it again here too is intentional and safe (DbUp is
+  # idempotent, journaled in public.dbup_schema_versions): it guarantees
+  # the schema is current for *this exact released commit*, regardless of
+  # whether lexflow-database's pipeline happened to run recently.
+  staging-db-migrate:
+    name: Staging DB migrate + seed
+    needs: resolve-image-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout lexflow-api
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Checkout lexflow-database
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lexflow-database
+          path: lexflow-database
+          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Apply schema (DbUp Runner)
+        working-directory: lexflow-database
+        env:
+          LEXFLOW_DB_CONNECTION: ${{ secrets.LEXFLOW_STAGING_DB_CONNECTION }}
+        run: dotnet run --project Runner/LexFlow.Database.Runner -- --scripts-path Scripts
+
+      # Idempotent (upserts by fixed well-known ids — see tools/E2eSeed/Program.cs):
+      # provisions/refreshes the login-capable staff+portal users the D-18 and
+      # C-15-against-staging suites both authenticate as.
+      - name: Seed staging (tools/E2eSeed)
+        env:
+          LEXFLOW_E2E_DB: ${{ secrets.LEXFLOW_STAGING_DB_CONNECTION }}
+        run: dotnet run --project tools/E2eSeed
+
+  # Step 2: API + Workers to the AKS *staging* namespace (a plain single
+  # deployment, not a blue/green pair — that distinction only exists in
+  # production; see deploy/helm/lexflow-api/values.yaml's `slot` comment).
+  staging-deploy-api:
+    name: Deploy API+Workers to AKS staging
+    needs: [resolve-image-tag, staging-db-migrate]
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      IMAGE_TAG: ${{ needs.resolve-image-tag.outputs.tag }}
+    steps:
+      - name: Checkout lexflow-api
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Helm upgrade (staging)
+        run: >
+          helm upgrade --install lexflow-api
+          ./deploy/helm/lexflow-api
+          --namespace ${{ secrets.AKS_STAGING_NAMESPACE }}
+          --create-namespace
+          --set slot=staging
+          --set replicaCount.api=1
+          --set replicaCount.workers=1
+          --set image.tag=${{ env.IMAGE_TAG }}
+          --wait --timeout 5m
+
+      # CORS for the staging Static Web Apps origins (LEXFLOW_STAGING_API_URL
+      # is this same deploy's own public URL — pre-provisioned, see below)
+      # is Azure App Configuration/Key Vault config this chart reads via an
+      # externally-synced Secret (see values.yaml's `env` comment), not
+      # something this workflow sets — the App Configuration "staging"
+      # label's Cors:AllowedOrigins/PortalAllowedOrigins must already list
+      # the staging SWA hostnames as one-time infra setup.
+      - name: Smoke test /health from inside the cluster
+        run: >
+          kubectl run smoke-${{ github.run_id }} --rm -i --restart=Never
+          --namespace ${{ secrets.AKS_STAGING_NAMESPACE }}
+          --image=curlimages/curl:8.10.1
+          -- curl -sf http://lexflow-api/health
+
+      # LEXFLOW_STAGING_API_URL is the stable, pre-provisioned public hostname
+      # for this namespace (e.g. an Azure Front Door / Application Gateway
+      # route, or a LoadBalancer Service's DNS — provisioned once, out of
+      # band, the same way AKS_RESOURCE_GROUP/AKS_CLUSTER_NAME already are).
+      # This step just proves it's actually pointed at what was just deployed.
+      - name: Smoke test the public staging URL
+        run: curl -sf "${{ secrets.LEXFLOW_STAGING_API_URL }}/health"
+
+  # Step 3: both Angular apps to Azure Static Web Apps' staging environment
+  # (see lexflow-web's own README/docs for the environment-file/CORS
+  # rationale — this repo just triggers the build+deploy, doesn't own the
+  # web app's source).
+  staging-deploy-web:
+    name: Deploy web apps to Azure Static Web Apps (staging)
+    needs: [resolve-image-tag, staging-db-migrate]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout lexflow-web
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lexflow-web
+          path: lexflow-web
+          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: lexflow-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: lexflow-web
+        run: npm ci
+
+      - name: Build staff-portal (staging)
+        working-directory: lexflow-web
+        run: npm run build:staff-portal:staging
+      - name: Bake in the staging API URL (staff-portal)
+        working-directory: lexflow-web
+        run: |
+          grep -rl '__LEXFLOW_STAGING_API_URL__' dist/staff-portal/browser/*.js | \
+            xargs -r sed -i "s|__LEXFLOW_STAGING_API_URL__|${{ secrets.LEXFLOW_STAGING_API_URL }}|g"
+
+      - name: Build client-portal (staging)
+        working-directory: lexflow-web
+        run: npm run build:client-portal:staging
+      - name: Bake in the staging API URL (client-portal)
+        working-directory: lexflow-web
+        run: |
+          grep -rl '__LEXFLOW_STAGING_API_URL__' dist/client-portal/browser/*.js | \
+            xargs -r sed -i "s|__LEXFLOW_STAGING_API_URL__|${{ secrets.LEXFLOW_STAGING_API_URL }}|g"
+
+      - name: Deploy staff-portal
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_STAFF }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: lexflow-web/dist/staff-portal/browser
+          output_location: ""
+          skip_app_build: true
+          deployment_environment: staging
+
+      - name: Deploy client-portal
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_CLIENT }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: lexflow-web/dist/client-portal/browser
+          output_location: ""
+          skip_app_build: true
+          deployment_environment: staging
+
+  # Release gate, part 1/2: D-18. Reuses the exact same 40-critical-journey
+  # Playwright suite lexflow-web's own CI runs against a local docker-compose
+  # stack (web-ci.yml's `e2e-fullstack` job) — just pointed at the staging
+  # deployment instead of localhost, and without booting a local dev server
+  # (PW_SKIP_WEBSERVER + the two PW_*_BASE_URL overrides — see
+  # e2e/playwright.fullstack.config.ts).
+  d18-staging-e2e:
+    name: "D-18: Playwright critical journeys (staging)"
+    needs: [staging-deploy-api, staging-deploy-web]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout lexflow-web
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lexflow-web
+          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run the 40 critical journeys against staging
+        env:
+          CI: true
+          PW_SKIP_WEBSERVER: "1"
+          PW_STAFF_BASE_URL: ${{ secrets.LEXFLOW_STAGING_STAFF_URL }}
+          PW_CLIENT_BASE_URL: ${{ secrets.LEXFLOW_STAGING_CLIENT_URL }}
+          E2E_TENANT_SLUG: ${{ secrets.LEXFLOW_STAGING_E2E_TENANT_SLUG || 'lexflow-demo' }}
+          E2E_EMAIL: ${{ secrets.LEXFLOW_STAGING_E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.LEXFLOW_STAGING_E2E_PASSWORD }}
+          E2E_PORTAL_EMAIL: ${{ secrets.LEXFLOW_STAGING_E2E_PORTAL_EMAIL }}
+          E2E_PORTAL_PASSWORD: ${{ secrets.LEXFLOW_STAGING_E2E_PORTAL_PASSWORD }}
+          RAZORPAY_TEST_KEY_ID: ${{ secrets.RAZORPAY_TEST_KEY_ID }}
+          RAZORPAY_TEST_KEY_SECRET: ${{ secrets.RAZORPAY_TEST_KEY_SECRET }}
+        run: npx playwright test --config=e2e/playwright.fullstack.config.ts
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-staging-report
+          path: playwright-report/
+          retention-days: 14
+
+  # Release gate, part 2/2: C-15 against staging. See
+  # tests/LexFlow.IntegrationTests/Staging/*.cs doc comments for exactly
+  # what this does and, importantly, does NOT re-check (the mutating
+  # critical journeys are D-18's job, not duplicated here).
+  c15-staging-smoke:
+    name: "C-15: staging smoke tests (auth reachability + G-AC1/G-AC2/AC-CC3)"
+    needs: staging-deploy-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout lexflow-api
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Run staging smoke tests
+        env:
+          LEXFLOW_STAGING_API_URL: ${{ secrets.LEXFLOW_STAGING_API_URL }}
+          LEXFLOW_STAGING_DB_CONNECTION: ${{ secrets.LEXFLOW_STAGING_DB_CONNECTION }}
+          LEXFLOW_STAGING_E2E_TENANT_SLUG: ${{ secrets.LEXFLOW_STAGING_E2E_TENANT_SLUG }}
+          LEXFLOW_STAGING_E2E_EMAIL: ${{ secrets.LEXFLOW_STAGING_E2E_EMAIL }}
+          LEXFLOW_STAGING_E2E_PASSWORD: ${{ secrets.LEXFLOW_STAGING_E2E_PASSWORD }}
+        run: >
+          dotnet test tests/LexFlow.IntegrationTests --configuration Release
+          --filter "Category=StagingSmoke"
+          --logger "trx;LogFileName=staging-smoke.trx"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: staging-smoke-results
+          path: "**/staging-smoke.trx"
+
+  # --- §38 deploy: blue-green on AKS behind Azure Front Door ---
+  # Moved verbatim from api-ci.yml's old `deploy` job — see git history there
+  # for the pre-move version. The only behavioral change is what gates it:
+  # previously `needs: build-push-images` (i.e. push-to-main + images built);
+  # now additionally gated on the staging deploy + D-18 + C-15 all having
+  # passed for this exact commit (PRD §38 / Build Playbook E-2). Requires
+  # the same repo/environment secrets as before: AZURE_CREDENTIALS,
+  # AKS_RESOURCE_GROUP, AKS_CLUSTER_NAME, AKS_NAMESPACE,
+  # LEXFLOW_DATABASE_CONNECTION_STRING. Guarded by the `production` GitHub
+  # Environment's required-reviewers rule — the "manual approval" step.
+  promote-production:
+    name: Deploy (blue-green production)
+    needs: [resolve-image-tag, d18-staging-e2e, c15-staging-smoke]
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      IMAGE_TAG: ${{ needs.resolve-image-tag.outputs.tag }}
+    steps:
+      - name: Checkout lexflow-api
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # Expand-contract migrations only, applied before the new (green) code is even
+      # reachable, and required to stay backward-compatible with the still-live blue
+      # stack (§38: "backward-compatible with blue") — never a breaking/contract
+      # migration in this step.
+      - name: Checkout lexflow-database
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lexflow-database
+          path: lexflow-database
+          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Run pre-deploy DB migrations (DbUp)
+        working-directory: lexflow-database
+        env:
+          LEXFLOW_DB_CONNECTION_STRING: ${{ secrets.LEXFLOW_DATABASE_CONNECTION_STRING }}
+        run: dotnet run --project Runner -- migrate
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Determine current live slot
+        id: live
+        run: |
+          current=$(kubectl get svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}" -o jsonpath='{.spec.selector.app\.kubernetes\.io/slot}' 2>/dev/null || echo "blue")
+          if [ "$current" = "blue" ]; then echo "next=green" >> "$GITHUB_OUTPUT"; else echo "next=blue" >> "$GITHUB_OUTPUT"; fi
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Helm upgrade the idle slot
+        run: >
+          helm upgrade --install lexflow-api-${{ steps.live.outputs.next }}
+          ./deploy/helm/lexflow-api
+          --namespace ${{ secrets.AKS_NAMESPACE }}
+          --set slot=${{ steps.live.outputs.next }}
+          --set image.tag=${{ env.IMAGE_TAG }}
+          --wait --timeout 5m
+
+      - name: Smoke test the idle slot directly (bypassing the live Service)
+        run: >
+          kubectl run smoke-${{ github.run_id }} --rm -i --restart=Never
+          --namespace ${{ secrets.AKS_NAMESPACE }}
+          --image=curlimages/curl:8.10.1
+          -- curl -sf http://lexflow-api-${{ steps.live.outputs.next }}/health
+
+      # §38: "traffic switch via Front Door" — Front Door's own origin never changes;
+      # it always points at this one stable in-cluster Service. The cutover is this
+      # Service's selector flipping from one slot to the other.
+      - name: Switch traffic to the new slot
+        run: >
+          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
+          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.next }}"}}}'
+
+      # §38: "automatic canary metrics watch 30 min (error rate, P95) with
+      # auto-rollback trigger." A real implementation queries Application Insights
+      # (`az monitor app-insights query` against the KQL requests table) rather than
+      # polling /health — that needs an App Insights resource wired up, which isn't
+      # provisioned for this repo yet. This step is the honestly-scoped stand-in:
+      # it fails (and the next step rolls back) on any sustained health-check
+      # failure in the 30-minute window, which is a strictly weaker signal than a
+      # real error-rate/P95 canary.
+      - name: Canary watch (30 min, health-check proxy)
+        run: |
+          # The runner isn't on the cluster network, so it can't resolve
+          # lexflow-api-<slot> directly — port-forward the in-cluster Service to the
+          # runner first (same approach the smoke-test step would need for a
+          # long-lived check, vs. that step's one-shot in-cluster kubectl run pod).
+          kubectl port-forward -n "${{ secrets.AKS_NAMESPACE }}" "svc/lexflow-api-${{ steps.live.outputs.next }}" 18080:80 &
+          port_forward_pid=$!
+          sleep 3
+
+          end=$((SECONDS + 1800))
+          failures=0
+          while [ $SECONDS -lt $end ]; do
+            if ! curl -sf http://localhost:18080/health >/dev/null; then
+              failures=$((failures + 1))
+            else
+              failures=0
+            fi
+            if [ $failures -ge 3 ]; then
+              echo "3 consecutive health-check failures during canary window" >&2
+              kill "$port_forward_pid" 2>/dev/null || true
+              exit 1
+            fi
+            sleep 30
+          done
+          kill "$port_forward_pid" 2>/dev/null || true
+
+      - name: Roll back traffic on canary failure
+        if: failure()
+        run: >
+          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
+          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.current }}"}}}'
+
+      # Deliberately does NOT scale down/delete the old slot here — §38: "blue kept
+      # 24 h for instant rollback." See .github/workflows/rollback.yml (manual,
+      # instant) and .github/workflows/cleanup-blue.yml (scheduled, after the 24h
+      # window) for the two follow-on workflows that act on it.

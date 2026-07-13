@@ -76,7 +76,7 @@ jobs:
           --logger "trx;LogFileName=integration-tests.trx"
           --collect:"XPlat Code Coverage"
           --results-directory ./TestResults/integration
-          --filter "FullyQualifiedName!~Testcontainers"
+          --filter "FullyQualifiedName!~Testcontainers&Category!=StagingSmoke"
 
       - name: Publish test results
         if: always()
@@ -418,132 +418,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.WORKERS_IMAGE }}:${{ steps.tag.outputs.tag }}
             ${{ env.REGISTRY }}/${{ env.WORKERS_IMAGE }}:latest
 
-  # --- §38 deploy: blue-green on AKS behind Azure Front Door ---
-  # Requires repo/environment secrets this workflow does not create: AZURE_CREDENTIALS
-  # (federated OIDC or SP JSON for azure/login), AKS_RESOURCE_GROUP, AKS_CLUSTER_NAME,
-  # AKS_NAMESPACE, LEXFLOW_DATABASE_CONNECTION_STRING (for the pre-deploy migration
-  # step). Guarded by the `production` GitHub Environment, whose required-reviewers
-  # protection rule (configured in repo Settings -> Environments, not in this file) IS
-  # the "manual approval" step §37's quality-gate list calls for — this job simply
-  # will not start running until that approval is granted.
-  deploy:
-    name: Deploy (blue-green)
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    needs: build-push-images
-    environment: production
-    env:
-      IMAGE_TAG: ${{ needs.build-push-images.outputs.tag }}
-    steps:
-      - name: Checkout lexflow-api
-        uses: actions/checkout@v4
-
-      # Expand-contract migrations only, applied before the new (green) code is even
-      # reachable, and required to stay backward-compatible with the still-live blue
-      # stack (§38: "backward-compatible with blue") — never a breaking/contract
-      # migration in this step.
-      - name: Checkout lexflow-database
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository_owner }}/lexflow-database
-          path: lexflow-database
-          token: ${{ secrets.LEXFLOW_DATABASE_CHECKOUT_TOKEN || secrets.GITHUB_TOKEN }}
-
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.x"
-
-      - name: Run pre-deploy DB migrations (DbUp)
-        working-directory: lexflow-database
-        env:
-          LEXFLOW_DB_CONNECTION_STRING: ${{ secrets.LEXFLOW_DATABASE_CONNECTION_STRING }}
-        run: dotnet run --project Runner -- migrate
-
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set AKS context
-        uses: azure/aks-set-context@v4
-        with:
-          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
-
-      - name: Determine current live slot
-        id: live
-        run: |
-          current=$(kubectl get svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}" -o jsonpath='{.spec.selector.app\.kubernetes\.io/slot}' 2>/dev/null || echo "blue")
-          if [ "$current" = "blue" ]; then echo "next=green" >> "$GITHUB_OUTPUT"; else echo "next=blue" >> "$GITHUB_OUTPUT"; fi
-          echo "current=$current" >> "$GITHUB_OUTPUT"
-
-      - name: Helm upgrade the idle slot
-        run: >
-          helm upgrade --install lexflow-api-${{ steps.live.outputs.next }}
-          ./deploy/helm/lexflow-api
-          --namespace ${{ secrets.AKS_NAMESPACE }}
-          --set slot=${{ steps.live.outputs.next }}
-          --set image.tag=${{ env.IMAGE_TAG }}
-          --wait --timeout 5m
-
-      - name: Smoke test the idle slot directly (bypassing the live Service)
-        run: >
-          kubectl run smoke-${{ github.run_id }} --rm -i --restart=Never
-          --namespace ${{ secrets.AKS_NAMESPACE }}
-          --image=curlimages/curl:8.10.1
-          -- curl -sf http://lexflow-api-${{ steps.live.outputs.next }}/health
-
-      # §38: "traffic switch via Front Door" — Front Door's own origin never changes;
-      # it always points at this one stable in-cluster Service. The cutover is this
-      # Service's selector flipping from one slot to the other.
-      - name: Switch traffic to the new slot
-        run: >
-          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
-          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.next }}"}}}'
-
-      # §38: "automatic canary metrics watch 30 min (error rate, P95) with
-      # auto-rollback trigger." A real implementation queries Application Insights
-      # (`az monitor app-insights query` against the KQL requests table) rather than
-      # polling /health — that needs an App Insights resource wired up, which isn't
-      # provisioned for this repo yet. This step is the honestly-scoped stand-in:
-      # it fails (and the next step rolls back) on any sustained health-check
-      # failure in the 30-minute window, which is a strictly weaker signal than a
-      # real error-rate/P95 canary.
-      - name: Canary watch (30 min, health-check proxy)
-        run: |
-          # The runner isn't on the cluster network, so it can't resolve
-          # lexflow-api-<slot> directly — port-forward the in-cluster Service to the
-          # runner first (same approach the smoke-test step would need for a
-          # long-lived check, vs. that step's one-shot in-cluster kubectl run pod).
-          kubectl port-forward -n "${{ secrets.AKS_NAMESPACE }}" "svc/lexflow-api-${{ steps.live.outputs.next }}" 18080:80 &
-          port_forward_pid=$!
-          sleep 3
-
-          end=$((SECONDS + 1800))
-          failures=0
-          while [ $SECONDS -lt $end ]; do
-            if ! curl -sf http://localhost:18080/health >/dev/null; then
-              failures=$((failures + 1))
-            else
-              failures=0
-            fi
-            if [ $failures -ge 3 ]; then
-              echo "3 consecutive health-check failures during canary window" >&2
-              kill "$port_forward_pid" 2>/dev/null || true
-              exit 1
-            fi
-            sleep 30
-          done
-          kill "$port_forward_pid" 2>/dev/null || true
-
-      - name: Roll back traffic on canary failure
-        if: failure()
-        run: >
-          kubectl patch svc lexflow-api -n "${{ secrets.AKS_NAMESPACE }}"
-          -p '{"spec":{"selector":{"app.kubernetes.io/slot":"${{ steps.live.outputs.current }}"}}}'
-
-      # Deliberately does NOT scale down/delete the old slot here — §38: "blue kept
-      # 24 h for instant rollback." See .github/workflows/rollback.yml (manual,
-      # instant) and .github/workflows/cleanup-blue.yml (scheduled, after the 24h
-      # window) for the two follow-on workflows that act on it.
+  # The §38 blue-green production deploy (previously here) moved to
+  # .github/workflows/release.yml, which triggers on this workflow
+  # completing successfully on main. It now only runs after a staging
+  # deploy + the D-18 Playwright suite + the C-15 staging smoke tests all
+  # pass against that staging environment (PRD §38 / Build Playbook E-2) —
+  # see release.yml for the full chain (staging DB migrate -> staging API
+  # deploy -> staging web deploy -> D-18 -> C-15 -> blue-green prod).

@@ -1,0 +1,178 @@
+# Full local-dev stack: Postgres -> DB schema Runner -> API+Workers -> both
+# Angular dev servers, in that dependency order, health-check-gated at each
+# step. Extends docker-compose.yml (infra + API + Workers only) with the
+# other two repos, which this file assumes are checked out as siblings of
+# this one:
+#
+#   <parent>/
+#     lexflow-database/   <- schema scripts + DbUp Runner
+#     lexflow-api/         <- this repo (run docker compose from here)
+#     lexflow-web/         <- staff-portal + client-portal (Angular)
+#
+# Usage: see docs/local-dev.md. Short version:
+#   docker compose -f docker-compose.full.yml up --build
+#
+# This is a superset of docker-compose.yml, not a replacement — if you only
+# need the API against its own infra (no DB Runner, no web dev servers),
+# `docker compose up` (the plain file) still works exactly as before.
+
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lexflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lexflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.33.0
+    command: "azurite --blobHost 0.0.0.0 --blobPort 10000 --location /data --skipApiVersionCheck"
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite-data:/data
+
+  # Step 2: apply lexflow-database's schema scripts once Postgres is up.
+  # `service_completed_successfully` (Compose v2.20+) is what lets api/
+  # workers wait for this to *finish* rather than just *start* — a plain
+  # `service_started` dependency would race the schema application.
+  db-runner:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    working_dir: /workspace
+    volumes:
+      - ../lexflow-database:/workspace
+    environment:
+      LEXFLOW_DB_CONNECTION: "Host=postgres;Port=5432;Database=lexflow;Username=postgres;Password=postgres"
+    command: ["dotnet", "run", "--project", "Runner/LexFlow.Database.Runner", "--", "--scripts-path", "Scripts"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Step 3: API + Workers, only once the schema is actually applied.
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__LexFlowDatabase: "Host=postgres;Port=5432;Database=lexflow;Username=postgres;Password=postgres"
+      Redis__ConnectionString: "redis:6379"
+      Elasticsearch__Uri: "http://elasticsearch:9200"
+      BlobStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      db-runner:
+        condition: service_completed_successfully
+
+  workers:
+    build:
+      context: .
+      dockerfile: src/LexFlow.Workers/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__LexFlowDatabase: "Host=postgres;Port=5432;Database=lexflow;Username=postgres;Password=postgres"
+      Redis__ConnectionString: "redis:6379"
+      Elasticsearch__Uri: "http://elasticsearch:9200"
+      BlobStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      db-runner:
+        condition: service_completed_successfully
+
+  # Step 4: both Angular dev servers, only once the API reports healthy.
+  # No Dockerfile lives in lexflow-web (it isn't containerized for
+  # production — Angular apps ship as static builds served some other way);
+  # for local dev this just runs the same `npm run start:*` scripts a
+  # developer would run on the host, inside a plain Node image with the
+  # repo bind-mounted, so there's nothing new to keep in sync with the web
+  # repo's actual package.json scripts.
+  staff-portal:
+    image: node:22
+    working_dir: /workspace
+    volumes:
+      - ../lexflow-web:/workspace
+    ports:
+      - "4200:4200"
+    command: >
+      sh -c "npm ci && npm run start:staff-portal:full -- --host 0.0.0.0"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  client-portal:
+    image: node:22
+    working_dir: /workspace
+    volumes:
+      - ../lexflow-web:/workspace
+    ports:
+      - "4300:4300"
+    command: >
+      sh -c "npm ci && npm run start:client-portal:full -- --host 0.0.0.0"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+  es-data:
+  azurite-data:

@@ -18,8 +18,12 @@ lexflow-api/
 │   └── LexFlow.E2ETests/            xUnit + FluentAssertions + WebApplicationFactory<Program>
 ├── client/                          TypeScript client generation for lexflow-web (see client/README.md)
 ├── deploy/helm/lexflow-api/         Helm chart for AKS blue-green deploys (§38)
+├── docs/local-dev.md                full three-repo local bring-up (see below)
+├── docs/staging-release.md          staging deploy + D-18/C-15 release gate (§38, see below)
 ├── Dockerfile                       LexFlow.Api image
 ├── docker-compose.yml               api + workers + postgres + redis + elasticsearch + azurite (local dev)
+├── docker-compose.full.yml          + lexflow-database's DB Runner + lexflow-web's dev servers
+├── COMPATIBILITY.md                 cross-repo version pairing rules
 └── LexFlow.sln
 ```
 
@@ -43,6 +47,17 @@ Or run the full stack (api + workers + every backing service) in containers:
 ```bash
 docker compose up -d --build
 ```
+
+### Full local stack, all three repos (Postgres → DB Runner → API+Workers → both Angular dev servers)
+
+```bash
+docker compose -f docker-compose.full.yml up --build
+```
+
+Requires `lexflow-database` and `lexflow-web` checked out as siblings of this
+repo. See `docs/local-dev.md` for the health-check-gated bring-up order and
+`COMPATIBILITY.md` for which versions of the three repos are meant to run
+together.
 
 Swagger UI: `http://localhost:5000/swagger` (or `:8080` under docker compose) — every
 environment except Production; the raw `/swagger/v1/swagger.json` OpenAPI 3.1 document
@@ -87,9 +102,20 @@ SignalR hub stubs are mapped and ready for module wiring:
    workflow artifact.
 6. `build-push-images` — on push to `main` only, once every gate above passes: builds +
    pushes `lexflow-api`/`lexflow-workers` images to GHCR, tagged by short SHA.
-7. `deploy` — §38 blue-green on AKS behind Azure Front Door, gated by the `production`
-   GitHub Environment's required-reviewers rule (manual approval). Pre-deploy DB
-   migrations (expand-contract, backward-compatible with the still-live "blue" stack) →
+
+That's where `api-ci.yml` ends. `.github/workflows/release.yml` picks up from there
+(triggered once `api-ci.yml` finishes on `main`) and owns the rest of §38 — see
+`docs/staging-release.md` for the full chain, but in short:
+
+7. Staging: DB Runner (pre-deploy job, per §38) + `tools/E2eSeed` against the managed
+   Postgres Flexible Server → Helm-deploy API+Workers to an AKS staging namespace →
+   deploy both Angular apps to Azure Static Web Apps' staging environment.
+8. Release gate: the **D-18** Playwright critical-journey suite and **C-15**'s staging
+   smoke tests (auth reachability + a real G-AC1/G-AC2/AC-CC3 check) both run against
+   that staging deployment — promotion to production does not proceed unless both pass.
+9. `promote-production` — §38 blue-green on AKS behind Azure Front Door, gated by the
+   `production` GitHub Environment's required-reviewers rule (manual approval). Pre-deploy
+   DB migrations (expand-contract, backward-compatible with the still-live "blue" stack) →
    Helm-upgrade the idle slot (`deploy/helm/lexflow-api`) → in-cluster smoke test → flip
    the live Service's selector to cut traffic over → 30-minute canary watch (health-check
    based; a real Application-Insights error-rate/P95 query is a documented follow-up,
@@ -103,4 +129,5 @@ None of `AZURE_CREDENTIALS`, `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME`, `AKS_NAME
 `LEXFLOW_DATABASE_CONNECTION_STRING`, or the `production` Environment itself exist yet
 in repo settings — `deploy`/`rollback`/`cleanup-blue` are real, runnable pipelines the
 moment that infrastructure is provisioned and those secrets are added, not aspirational
-placeholders requiring further workflow-file changes.
+placeholders requiring further workflow-file changes. Same for `release.yml`'s own
+staging-specific secrets — see `docs/staging-release.md` for the full list.
