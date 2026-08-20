@@ -17,7 +17,12 @@ public sealed class UserSessionConfiguration : IEntityTypeConfiguration<UserSess
         builder.Property(s => s.RefreshHash).HasColumnName("refresh_hash").IsRequired();
         builder.Property(s => s.FamilyId).HasColumnName("family_id").IsRequired();
         builder.Property(s => s.Ua).HasColumnName("ua");
-        builder.Property(s => s.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(s => s.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(s => s.ExpiresAt).HasColumnName("expires_at").IsRequired();
         builder.Property(s => s.RevokedAt).HasColumnName("revoked_at");
 

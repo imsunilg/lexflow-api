@@ -73,6 +73,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<JwtSigningKeyProvider, Microsoft.Extensions.Options.IOptions<JwtOptions>>((jwtBearerOptions, keyProvider, jwtOptions) =>
     {
+        // JwtTokenService issues plain "sub"/"tenant"/"branch"/"perm" claim types; the
+        // handler's default inbound claim mapping would silently rename "sub" to the long
+        // ClaimTypes.NameIdentifier URI (and similar for a few others) before ICurrentUserService
+        // ever sees it, so every FindFirst("sub")/FindFirst("tenant") lookup — including the
+        // denylist check right below — would come back null despite a perfectly valid token.
+        jwtBearerOptions.MapInboundClaims = false;
         jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -110,6 +116,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 builder.Services.AddOptions<JwtBearerOptions>(PortalAuthenticationDefaults.AuthenticationScheme)
     .Configure<JwtSigningKeyProvider, Microsoft.Extensions.Options.IOptions<JwtOptions>>((jwtBearerOptions, keyProvider, jwtOptions) =>
     {
+        jwtBearerOptions.MapInboundClaims = false;
         jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -175,21 +182,43 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-    options.AddPolicy("LexFlowClients", policy => policy
-        .WithOrigins(allowedOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials());
+    options.AddPolicy("LexFlowClients", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+
+        // Dev convenience: Angular's dev server port varies (ng serve --port, multiple
+        // apps/instances running side by side), so accept any localhost/127.0.0.1 origin
+        // rather than hardcoding one. AllowAnyOrigin() can't be combined with
+        // AllowCredentials() per the CORS spec, hence the loopback predicate instead of a
+        // wildcard. Never applies outside Development — non-dev origins still come only
+        // from Cors:AllowedOrigins.
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback);
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins);
+        }
+    });
 
     // Module 17 Security: "complete identity separation from staff" extends to origins —
     // the portal-web app is a distinct Angular app on its own origin(s), never bundled with
     // the staff app's allowed-origins list.
     var portalAllowedOrigins = builder.Configuration.GetSection("Cors:PortalAllowedOrigins").Get<string[]>() ?? [];
-    options.AddPolicy("LexFlowPortal", policy => policy
-        .WithOrigins(portalAllowedOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials());
+    options.AddPolicy("LexFlowPortal", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback);
+        }
+        else
+        {
+            policy.WithOrigins(portalAllowedOrigins);
+        }
+    });
 });
 
 builder.Services.AddSignalR();

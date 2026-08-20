@@ -7,6 +7,7 @@ using LexFlow.Infrastructure.Ai;
 using LexFlow.Infrastructure.Caching;
 using LexFlow.Infrastructure.Comm;
 using LexFlow.Infrastructure.Crm;
+using LexFlow.Infrastructure.Dashboard;
 using LexFlow.Infrastructure.Dms;
 using LexFlow.Infrastructure.Fin;
 using LexFlow.Infrastructure.Kb;
@@ -240,6 +241,9 @@ public static class DependencyInjection
         // Overridden by the Api process (SignalRJobsBroadcaster, registered after AddInfrastructure)
         // — see NullJobsBroadcaster's own doc comment for why Workers keeps this default.
         services.AddScoped<IJobsBroadcaster, NullJobsBroadcaster>();
+
+        // --- Module 1: Dashboard ---
+        services.AddScoped<IDashboardService, DashboardService>();
 
         // --- Module 17: Client Portal (separate identity realm, timeline, Pay-Now, uploads, appointments, messaging) ---
         services.AddScoped<IPortalScopeService, PortalScopeService>();

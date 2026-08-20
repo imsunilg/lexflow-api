@@ -17,7 +17,12 @@ public sealed class PortalActivityLogConfiguration : IEntityTypeConfiguration<Po
         builder.Property(l => l.Action).HasColumnName("action").IsRequired();
         builder.Property(l => l.EntityType).HasColumnName("entity_type").IsRequired();
         builder.Property(l => l.EntityId).HasColumnName("entity_id");
-        builder.Property(l => l.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(l => l.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(l => l.Ua).HasColumnName("ua");
         builder.Property(l => l.At).HasColumnName("at").IsRequired();
     }

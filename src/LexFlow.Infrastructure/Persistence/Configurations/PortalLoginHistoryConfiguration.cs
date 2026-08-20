@@ -15,7 +15,12 @@ public sealed class PortalLoginHistoryConfiguration : IEntityTypeConfiguration<P
         builder.Property(h => h.TenantId).HasColumnName("tenant_id").IsRequired();
         builder.Property(h => h.ClientPortalUserId).HasColumnName("client_portal_user_id");
         builder.Property(h => h.At).HasColumnName("at").IsRequired();
-        builder.Property(h => h.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(h => h.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(h => h.Ua).HasColumnName("ua");
         builder.Property(h => h.Result).HasColumnName("result").IsRequired();
         builder.Property(h => h.FailureReason).HasColumnName("failure_reason");

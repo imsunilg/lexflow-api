@@ -15,7 +15,12 @@ public sealed class LoginHistoryConfiguration : IEntityTypeConfiguration<LoginHi
         builder.Property(l => l.TenantId).HasColumnName("tenant_id").IsRequired();
         builder.Property(l => l.UserId).HasColumnName("user_id");
         builder.Property(l => l.At).HasColumnName("at").IsRequired();
-        builder.Property(l => l.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(l => l.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(l => l.Ua).HasColumnName("ua");
         builder.Property(l => l.Result).HasColumnName("result").IsRequired();
         builder.Property(l => l.FailureReason).HasColumnName("failure_reason");

@@ -23,10 +23,14 @@ const string e2eUserId = "00000000-0000-0000-0000-e2e000000001";
 const string e2eNumberSeriesId = "00000000-0000-0000-0000-e2e000000002";
 const string e2ePortalClientId = "00000000-0000-0000-0000-e2e000000003";
 const string e2ePortalUserId = "00000000-0000-0000-0000-e2e000000004";
+const string adminUserId = "00000000-0000-0000-0000-e2e000000005";
 const string tenantSlug = "lexflow-demo";
 const string e2eEmail = "e2e.lawyer@lexflow-demo.test";
 const string e2ePassword = "E2eTest!2025";
 const string e2eName = "E2E Test Lawyer";
+const string adminEmail = "admin@lexflow-demo.test";
+const string adminPassword = "admin@123";
+const string adminName = "admin";
 const string e2ePortalEmail = "e2e.client@lexflow-demo.test";
 const string e2ePortalPassword = "E2ePortal!2025";
 const string e2ePortalClientName = "E2E Portal Client";
@@ -81,6 +85,46 @@ await using (var command = new NpgsqlCommand(
 {
     command.Parameters.AddWithValue("tenantId", Guid.Parse(demoTenantId));
     command.Parameters.AddWithValue("userId", Guid.Parse(e2eUserId));
+    await command.ExecuteNonQueryAsync();
+}
+
+// 2b. Ad-hoc "admin" test login (name "admin", password "admin@123") for
+// manual local testing alongside the E2E user above — same tenant, same
+// Argon2id hashing, "owner" role. Upsert-by-id, same as the E2E user.
+await using (var command = new NpgsqlCommand(
+    """
+    INSERT INTO core.users (id, tenant_id, email, password_hash, name, branch_id, status)
+    VALUES (@id, @tenantId, @email, @passwordHash, @name, @branchId, 'Active')
+    ON CONFLICT (id) DO UPDATE SET
+      email = EXCLUDED.email,
+      password_hash = EXCLUDED.password_hash,
+      name = EXCLUDED.name,
+      branch_id = EXCLUDED.branch_id,
+      status = 'Active';
+    """,
+    connection))
+{
+    command.Parameters.AddWithValue("id", Guid.Parse(adminUserId));
+    command.Parameters.AddWithValue("tenantId", Guid.Parse(demoTenantId));
+    command.Parameters.AddWithValue("email", adminEmail);
+    command.Parameters.AddWithValue("passwordHash", passwordHasher.Hash(adminPassword));
+    command.Parameters.AddWithValue("name", adminName);
+    command.Parameters.AddWithValue("branchId", Guid.Parse(demoBranchId));
+    await command.ExecuteNonQueryAsync();
+}
+
+await using (var command = new NpgsqlCommand(
+    """
+    INSERT INTO core.user_roles (tenant_id, user_id, role_id)
+    SELECT @tenantId, @userId, r.id
+    FROM core.roles r
+    WHERE r.tenant_id = @tenantId AND r.key = 'owner'
+    ON CONFLICT (user_id, role_id) DO NOTHING;
+    """,
+    connection))
+{
+    command.Parameters.AddWithValue("tenantId", Guid.Parse(demoTenantId));
+    command.Parameters.AddWithValue("userId", Guid.Parse(adminUserId));
     await command.ExecuteNonQueryAsync();
 }
 
@@ -158,6 +202,8 @@ Console.WriteLine("E2E seed complete.");
 Console.WriteLine($"  Tenant slug:        {tenantSlug}");
 Console.WriteLine($"  Staff email:        {e2eEmail}");
 Console.WriteLine($"  Staff password:     {e2ePassword}");
+Console.WriteLine($"  Admin email:        {adminEmail}");
+Console.WriteLine($"  Admin password:     {adminPassword}");
 Console.WriteLine($"  Portal client id:   {e2ePortalClientId}");
 Console.WriteLine($"  Portal email:       {e2ePortalEmail}");
 Console.WriteLine($"  Portal password:    {e2ePortalPassword}");

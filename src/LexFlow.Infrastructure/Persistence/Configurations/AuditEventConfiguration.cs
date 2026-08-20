@@ -21,7 +21,12 @@ public sealed class AuditEventConfiguration : IEntityTypeConfiguration<AuditEven
         builder.Property(e => e.EntityId).HasColumnName("entity_id");
         builder.Property(e => e.Before).HasColumnName("before").HasColumnType("jsonb");
         builder.Property(e => e.After).HasColumnName("after").HasColumnType("jsonb");
-        builder.Property(e => e.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(e => e.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(e => e.Ua).HasColumnName("ua");
         builder.Property(e => e.TraceId).HasColumnName("trace_id");
 

@@ -17,7 +17,12 @@ public sealed class DocumentActivityConfiguration : IEntityTypeConfiguration<Doc
         builder.Property(a => a.UserId).HasColumnName("user_id");
         builder.Property(a => a.Action).HasColumnName("action").IsRequired();
         builder.Property(a => a.At).HasColumnName("at").IsRequired();
-        builder.Property(a => a.Ip).HasColumnName("ip").HasColumnType("inet");
+        builder.Property(a => a.Ip)
+            .HasColumnName("ip")
+            .HasColumnType("inet")
+            .HasConversion(
+                v => v == null ? null : System.Net.IPAddress.Parse(v),
+                v => v == null ? null : v.ToString());
         builder.Property(a => a.Ua).HasColumnName("ua");
 
         builder.Property(a => a.CreatedAt).HasColumnName("created_at").IsRequired();
