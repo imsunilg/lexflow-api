@@ -45,7 +45,7 @@ public sealed record GetActivityWidgetQuery(int Limit) : IRequest<IReadOnlyList<
 public sealed class GetActivityWidgetQueryHandler(IDashboardService dashboardService, ICurrentUserService currentUser) : IRequestHandler<GetActivityWidgetQuery, IReadOnlyList<ActivityItemDto>>
 {
     public Task<IReadOnlyList<ActivityItemDto>> Handle(GetActivityWidgetQuery request, CancellationToken cancellationToken)
-        => dashboardService.GetActivityAsync(currentUser.TenantId!.Value, request.Limit, cancellationToken);
+        => dashboardService.GetActivityAsync(currentUser.TenantId!.Value, currentUser.UserId!.Value, request.Limit, cancellationToken);
 }
 
 /// <summary>GET /api/v1/dashboard/widgets/case-stats?range=&amp;start=&amp;end=.</summary>

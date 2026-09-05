@@ -31,7 +31,7 @@ public sealed class TimersController(IMediator mediator) : ControllerBase
     [HttpPost("stop")]
     [RequirePermission("time_entries.create.own")]
     public async Task<IActionResult> Stop([FromBody] StopTimerRequest request, CancellationToken cancellationToken)
-        => Ok(ApiResponse<TimeEntryDto>.Of(await mediator.Send(new StopTimerCommand(request.Billable, request.Narrative, request.InternalNote, request.ActivityCodeId), cancellationToken)));
+        => Ok(ApiResponse<TimeEntryDto>.Of(await mediator.Send(new StopTimerCommand(request.Billable, request.Narrative, request.InternalNote, request.ActivityCodeId, request.MatterId), cancellationToken)));
 
     [HttpGet("current")]
     [RequirePermission("time_entries.read.own")]
@@ -41,4 +41,9 @@ public sealed class TimersController(IMediator mediator) : ControllerBase
 
 public sealed record StartTimerRequest(Guid? MatterId, Guid? ActivityCodeId, string? ContextRef);
 
-public sealed record StopTimerRequest(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId);
+/// <summary>
+/// <see cref="MatterId"/> classifies a timer that was started without one (StartTimerRequest's
+/// matter is optional, "classify later" per PRD Module 9 User Flow 1) — ignored if the running
+/// timer already has a matter. Stopping still fails if neither is set.
+/// </summary>
+public sealed record StopTimerRequest(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId, Guid? MatterId);

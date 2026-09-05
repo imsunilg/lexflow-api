@@ -15,6 +15,16 @@ namespace LexFlow.Api.Middleware;
 /// </summary>
 public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
+    // ASP.NET Core's MVC pipeline serializes controller-returned bodies (Ok(...)) with
+    // camelCase property names by default. This middleware writes directly to the response
+    // body instead of going through that pipeline, so without explicitly matching those
+    // options here, every error response came back PascalCase (Success/Error/Code/Message)
+    // while every success response was camelCase (success/data) — silently breaking every
+    // Angular error handler that reads `error.error.error.message` (got `undefined`, since
+    // the real key was `Message`), which is why the UI only ever showed generic fallback
+    // messages like "Something went wrong" instead of the specific backend error.
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -102,6 +112,6 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, JsonOptions));
     }
 }

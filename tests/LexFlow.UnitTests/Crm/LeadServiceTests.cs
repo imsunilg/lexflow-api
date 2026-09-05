@@ -86,6 +86,21 @@ public sealed class LeadServiceTests
     }
 
     [Fact]
+    public async Task ConvertAsync_allows_conversion_before_Consultation_Done_when_forced()
+    {
+        await using var db = CreateContext(nameof(ConvertAsync_allows_conversion_before_Consultation_Done_when_forced));
+        var service = new LeadService(db);
+        var tenantId = Guid.NewGuid();
+        var lead = await service.CreateAsync(tenantId, null, Input(), CancellationToken.None);
+
+        var result = await service.ConvertAsync(tenantId, null, lead.Id, createMatter: false, null, null, force: true, CancellationToken.None);
+
+        result.ClientId.Should().NotBeEmpty();
+        var reloadedLead = await db.Leads.SingleAsync(l => l.Id == lead.Id);
+        reloadedLead.Status.Should().Be("Converted");
+    }
+
+    [Fact]
     public async Task ConvertAsync_creates_the_client_and_marks_the_lead_converted_atomically()
     {
         await using var db = CreateContext(nameof(ConvertAsync_creates_the_client_and_marks_the_lead_converted_atomically));

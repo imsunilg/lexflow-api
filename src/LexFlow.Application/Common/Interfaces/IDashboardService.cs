@@ -19,7 +19,10 @@ public interface IDashboardService
 
     Task<IReadOnlyList<DeadlineItemDto>> GetDeadlinesAsync(Guid tenantId, int days, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<ActivityItemDto>> GetActivityAsync(Guid tenantId, int limit, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ActivityItemDto>> GetActivityAsync(Guid tenantId, Guid userId, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>"Clear All" — advances the user's own cursor, never deletes from audit.audit_events.</summary>
+    Task ClearActivityAsync(Guid tenantId, Guid userId, CancellationToken cancellationToken = default);
 
     Task<CaseStatsSummaryDto> GetCaseStatsAsync(Guid tenantId, DateOnly start, DateOnly end, CancellationToken cancellationToken = default);
 

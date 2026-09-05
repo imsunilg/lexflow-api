@@ -43,6 +43,7 @@ public sealed class User : LexFlow.Domain.Common.AuditableEntity
     public byte[]? TwoFaSecret { get; private set; }
     public bool TwoFaEnabled { get; private set; }
     public string NotificationPrefs { get; private set; } = "{}";
+    public DateTimeOffset? DashboardActivityClearedAt { get; private set; }
 
     public void SetPasswordHash(string passwordHash) => PasswordHash = passwordHash;
 
@@ -93,4 +94,11 @@ public sealed class User : LexFlow.Domain.Common.AuditableEntity
 
     /// <summary>Completes enrollment after the client has proven possession of the secret with a valid code.</summary>
     public void ConfirmTwoFactor() => TwoFaEnabled = true;
+
+    /// <summary>
+    /// "Clear All" on the dashboard's Recent Activities widget. Does not delete anything —
+    /// audit.audit_events is insert-only and shared across the whole tenant — this just moves
+    /// this user's own cursor forward so their next fetch excludes everything up to now.
+    /// </summary>
+    public void ClearDashboardActivity(DateTimeOffset at) => DashboardActivityClearedAt = at;
 }

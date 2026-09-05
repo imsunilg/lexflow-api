@@ -99,8 +99,8 @@ public sealed class MatterService(LexFlowDbContext db, IConflictCheckService con
 
         if (!string.IsNullOrWhiteSpace(filter.Query))
         {
-            var q = filter.Query;
-            query = query.Where(m => m.Title.Contains(q) || m.Number.Contains(q));
+            var q = $"%{filter.Query}%";
+            query = query.Where(m => EF.Functions.ILike(m.Title, q) || EF.Functions.ILike(m.Number, q));
         }
 
         var matters = await query.OrderByDescending(m => m.CreatedAt).ToListAsync(cancellationToken);

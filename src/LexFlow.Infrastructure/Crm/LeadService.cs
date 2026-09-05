@@ -96,23 +96,48 @@ public sealed class LeadService(LexFlowDbContext db, IWorkflowEventPublisher? wo
 
         if (filter.CreatedFrom.HasValue)
         {
-            query = query.Where(l => l.CreatedAt >= filter.CreatedFrom);
+            // ASP.NET's query-string model binder parses a plain date like "2026-07-31"
+            // into a DateTimeOffset using the server's local offset (e.g. +05:30 IST), not
+            // UTC. Npgsql only accepts Offset=0 for `timestamp with time zone` columns, so
+            // without normalizing here every createdFrom/createdTo filter throws
+            // "Cannot write DateTimeOffset with Offset=... only offset 0 (UTC) is
+            // supported." `ToUniversalTime()` keeps the same instant, just re-expressed.
+            var createdFrom = filter.CreatedFrom.Value.ToUniversalTime();
+            query = query.Where(l => l.CreatedAt >= createdFrom);
         }
 
         if (filter.CreatedTo.HasValue)
         {
-            query = query.Where(l => l.CreatedAt <= filter.CreatedTo);
+            var createdTo = filter.CreatedTo.Value.ToUniversalTime();
+            query = query.Where(l => l.CreatedAt <= createdTo);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Query))
         {
-            var q = filter.Query;
-            query = query.Where(l => l.FirstName.Contains(q) || (l.LastName != null && l.LastName.Contains(q)) || (l.Email != null && l.Email.Contains(q)));
+            var q = $"%{filter.Query}%";
+            query = query.Where(l =>
+                EF.Functions.ILike(l.FirstName, q) ||
+                (l.LastName != null && EF.Functions.ILike(l.LastName, q)) ||
+                (l.Email != null && EF.Functions.ILike(l.Email, q)));
         }
 
         var leads = await query.OrderByDescending(l => l.CreatedAt).ToListAsync(cancellationToken);
         return leads.Select(ToDto).ToList();
     }
+
+    public async Task<IReadOnlyList<LeadSourceDto>> GetSourcesAsync(Guid tenantId, CancellationToken cancellationToken = default)
+        => await db.LeadSources
+            .Where(s => s.TenantId == tenantId && s.IsActive)
+            .OrderBy(s => s.Name)
+            .Select(s => new LeadSourceDto(s.Id, s.Name))
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<LostReasonDto>> GetLostReasonsAsync(Guid tenantId, CancellationToken cancellationToken = default)
+        => await db.LostReasons
+            .Where(r => r.TenantId == tenantId && r.IsActive)
+            .OrderBy(r => r.Name)
+            .Select(r => new LostReasonDto(r.Id, r.Name))
+            .ToListAsync(cancellationToken);
 
     public async Task<LeadDto> UpdateAsync(Guid tenantId, Guid leadId, UpdateLeadInput input, CancellationToken cancellationToken = default)
     {

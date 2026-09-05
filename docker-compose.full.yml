@@ -98,6 +98,10 @@ services:
       Redis__ConnectionString: "redis:6379"
       Elasticsearch__Uri: "http://elasticsearch:9200"
       BlobStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+      # Optional — Module 16 AI Gateway. Unset/empty is fine; the API then returns a
+      # clear 422 AI_NOT_CONFIGURED instead of failing unpredictably. Set via a `.env`
+      # file (see .env.example) or your shell environment before `docker compose up`.
+      Ai__AnthropicApiKey: "${Ai__AnthropicApiKey:-}"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
       interval: 5s

@@ -1,0 +1,23 @@
+Using launch settings from src\LexFlow.Api\Properties\launchSettings.json...
+Building...
+[17:17:45 INF] Start installing Hangfire SQL objects...
+[17:17:45 INF] Hangfire SQL objects installed.
+[17:17:45 INF] User profile is available. Using 'C:\Users\ilike\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[17:17:45 INF] Now listening on: http://localhost:5000
+[17:17:45 INF] Application started. Press Ctrl+C to shut down.
+[17:17:45 INF] Hosting environment: Development
+[17:17:45 INF] Content root path: D:\Study\Angular\LawyerCRM\lexflow-api\src\LexFlow.Api
+[17:17:54 INF] Request starting HTTP/1.1 GET http://localhost:5000/api/v1/leads - null null
+[17:17:54 WRN] Failed to determine the https port for redirect.
+[17:17:54 WRN] Jwt:PrivateKeyPem is not configured — generating an ephemeral RSA-2048 key for this process. This is only safe for local development; production must source a stable RS256 key pair from Key Vault (PRD §20(3)).
+[17:17:59 INF] Request starting HTTP/1.1 GET http://localhost:5000/api/v1/leads - null null
+[17:18:02 INF] Authorization failed. These requirements were not met:
+LexFlow.Infrastructure.Security.PermissionRequirement
+[17:18:02 INF] Authorization failed. These requirements were not met:
+LexFlow.Infrastructure.Security.PermissionRequirement
+[17:18:02 INF] AuthenticationScheme: Bearer was challenged.
+[17:18:02 INF] AuthenticationScheme: Bearer was challenged.
+[17:18:02 INF] HTTP GET /api/v1/leads responded 401 in 2920.9247 ms
+[17:18:02 INF] HTTP GET /api/v1/leads responded 401 in 7892.4321 ms
+[17:18:02 INF] Request finished HTTP/1.1 GET http://localhost:5000/api/v1/leads - 499 null null 7944.3785ms
+[17:18:02 INF] Request finished HTTP/1.1 GET http://localhost:5000/api/v1/leads - 401 0 null 2939.2619ms

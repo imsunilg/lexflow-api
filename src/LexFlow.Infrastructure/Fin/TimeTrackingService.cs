@@ -63,7 +63,11 @@ public sealed class TimeTrackingService(LexFlowDbContext db) : ITimeTrackingServ
     {
         var timer = await GetTimerOrThrowAsync(tenantId, userId, cancellationToken);
 
-        if (timer.MatterId is null)
+        // A timer started without a matter (StartTimerRequest.MatterId is optional — "classify
+        // later" per PRD Module 9 User Flow 1) can be classified here instead, via
+        // StopTimerInput.MatterId. Only actually missing if neither was ever supplied.
+        var matterId = timer.MatterId ?? input.MatterId;
+        if (matterId is null)
         {
             throw new ValidationException([new ValidationFailure("matterId", "The timer was started without a matter and must be classified before it can be stopped.")]);
         }
@@ -75,7 +79,7 @@ public sealed class TimeTrackingService(LexFlowDbContext db) : ITimeTrackingServ
         var durationMin = Math.Max(1, (int)Math.Round(cappedMinutes, MidpointRounding.AwayFromZero));
         var roundedMin = RoundUp(durationMin, RoundingIncrementMinutes);
 
-        var entry = new TimeEntry(tenantId, userId, timer.MatterId.Value, input.ActivityCodeId, DateOnly.FromDateTime(timer.StartedAt.UtcDateTime), timer.StartedAt, durationMin, roundedMin, input.Billable, input.Narrative, input.InternalNote, "timer");
+        var entry = new TimeEntry(tenantId, userId, matterId.Value, input.ActivityCodeId, DateOnly.FromDateTime(timer.StartedAt.UtcDateTime), timer.StartedAt, durationMin, roundedMin, input.Billable, input.Narrative, input.InternalNote, "timer");
         await db.TimeEntries.AddAsync(entry, cancellationToken);
         db.RunningTimers.Remove(timer);
         await db.SaveChangesAsync(cancellationToken);

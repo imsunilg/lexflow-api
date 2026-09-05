@@ -9,6 +9,12 @@ public interface ILeadService
 
     Task<IReadOnlyList<LeadDto>> GetAllAsync(Guid tenantId, LeadFilter filter, CancellationToken cancellationToken = default);
 
+    /// <summary>Active `crm.lead_sources` for this tenant — populates the Source dropdown on create/edit.</summary>
+    Task<IReadOnlyList<LeadSourceDto>> GetSourcesAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    /// <summary>Active `crm.lost_reasons` for this tenant — populates the Reason dropdown on "Mark lost."</summary>
+    Task<IReadOnlyList<LostReasonDto>> GetLostReasonsAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
     Task<LeadDto> UpdateAsync(Guid tenantId, Guid leadId, UpdateLeadInput input, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(Guid tenantId, Guid leadId, CancellationToken cancellationToken = default);
@@ -84,6 +90,10 @@ public sealed record LeadFilter(string? Stage, Guid? SourceId, Guid? OwnerId, in
 public sealed record ConvertLeadResult(Guid ClientId, Guid? MatterId, Guid? InvoiceId);
 
 public sealed record DuplicateMatchDto(Guid LeadId, string DisplayName, string? Email, string? PhoneE164, double Similarity, string MatchKind);
+
+public sealed record LeadSourceDto(Guid Id, string Name);
+
+public sealed record LostReasonDto(Guid Id, string Name);
 
 public sealed record LeadActivityDto(Guid Id, Guid LeadId, string ActivityType, string? Direction, int? DurationMin, string? Subject, string? Body, string? Outcome, DateTimeOffset OccurredAt, Guid? LoggedBy);
 

@@ -44,6 +44,13 @@ public sealed class DashboardController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetActivity([FromQuery] int limit = 20, CancellationToken cancellationToken = default)
         => Ok(ApiResponse<IReadOnlyList<ActivityItemDto>>.Of(await mediator.Send(new GetActivityWidgetQuery(limit), cancellationToken)));
 
+    [HttpPost("widgets/activity/clear")]
+    public async Task<IActionResult> ClearActivity(CancellationToken cancellationToken)
+    {
+        await mediator.Send(new ClearActivityCommand(), cancellationToken);
+        return NoContent();
+    }
+
     /// <summary>`range` is accepted for forward-compatibility with the frontend's preset selector but the actual window is always `start`/`end` (frontend always supplies both alongside `range`, per DashboardWidgetsService.rangeParams).</summary>
     [HttpGet("widgets/case-stats")]
     public async Task<IActionResult> GetCaseStats([FromQuery] string? range, [FromQuery] DateOnly? start, [FromQuery] DateOnly? end, CancellationToken cancellationToken)

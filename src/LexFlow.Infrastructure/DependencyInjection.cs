@@ -226,7 +226,7 @@ public static class DependencyInjection
 
         // --- Module 16: AI Features (gateway, RAG, 12 features, quota, audit, transcription) ---
         services.Configure<AiOptions>(configuration.GetSection(AiOptions.SectionName));
-        services.AddHttpClient(nameof(AnthropicLlmProvider));
+        services.AddHttpClient(nameof(AnthropicLlmProvider), client => client.Timeout = TimeSpan.FromSeconds(30));
         services.AddScoped<ILlmProvider, AnthropicLlmProvider>();
         services.AddScoped<IEmbeddingProvider, HashingEmbeddingProvider>();
         services.AddScoped<ISpeechToTextService, NullSpeechToTextService>();

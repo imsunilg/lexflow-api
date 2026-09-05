@@ -31,8 +31,13 @@ public sealed class LeadsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         => Ok(ApiResponse<LeadDto>.Of(await mediator.Send(new GetLeadQuery(id), cancellationToken)));
 
+    [HttpGet("sources")]
+    [RequirePermission("leads.read.all")]
+    public async Task<IActionResult> GetSources(CancellationToken cancellationToken)
+        => Ok(ApiResponse<IReadOnlyList<LeadSourceDto>>.Of(await mediator.Send(new GetLeadSourcesQuery(), cancellationToken)));
+
     [HttpPut("{id:guid}")]
-    [RequirePermission("leads.manage.all")]
+    [RequirePermission("leads.update.all")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLeadRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateLeadCommand(id, request.FirstName, request.LastName, request.Company, request.Email, request.PhoneE164, request.SourceId, request.PracticeAreaId, request.IssueSummary, request.OpposingParty, request.BudgetBand);
@@ -49,7 +54,7 @@ public sealed class LeadsController(IMediator mediator) : ControllerBase
 
     /// <summary>AC-L2: writes lead_stage_history and notifies owner.</summary>
     [HttpPost("{id:guid}/stage")]
-    [RequirePermission("leads.manage.all")]
+    [RequirePermission("leads.update.all")]
     public async Task<IActionResult> ChangeStage(Guid id, [FromBody] ChangeLeadStageRequest request, CancellationToken cancellationToken)
         => Ok(ApiResponse<LeadDto>.Of(await mediator.Send(new ChangeLeadStageCommand(id, request.ToStage, request.Note), cancellationToken)));
 
@@ -68,7 +73,7 @@ public sealed class LeadsController(IMediator mediator) : ControllerBase
 
     /// <summary>AC-L3: atomic Client(+Matter+Invoice) conversion.</summary>
     [HttpPost("{id:guid}/convert")]
-    [RequirePermission("leads.manage.all")]
+    [RequirePermission("leads.convert.all")]
     public async Task<IActionResult> Convert(Guid id, [FromBody] ConvertLeadRequest request, CancellationToken cancellationToken)
     {
         var command = new ConvertLeadCommand(id, request.CreateMatter, request.MatterPayload, request.InvoicePayload);
@@ -76,9 +81,14 @@ public sealed class LeadsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("{id:guid}/lost")]
-    [RequirePermission("leads.manage.all")]
+    [RequirePermission("leads.update.all")]
     public async Task<IActionResult> MarkLost(Guid id, [FromBody] MarkLeadLostRequest request, CancellationToken cancellationToken)
         => Ok(ApiResponse<LeadDto>.Of(await mediator.Send(new MarkLeadLostCommand(id, request.ReasonId, request.Note), cancellationToken)));
+
+    [HttpGet("lost-reasons")]
+    [RequirePermission("leads.read.all")]
+    public async Task<IActionResult> GetLostReasons(CancellationToken cancellationToken)
+        => Ok(ApiResponse<IReadOnlyList<LostReasonDto>>.Of(await mediator.Send(new GetLeadLostReasonsQuery(), cancellationToken)));
 
     /// <summary>Module 2 User Flow step 2: phone/email exact + pg_trgm fuzzy name match.</summary>
     [HttpPost("check-duplicates")]
@@ -104,9 +114,12 @@ public sealed class LeadsController(IMediator mediator) : ControllerBase
 
     [HttpGet("export")]
     [RequirePermission("leads.export.all")]
-    public async Task<IActionResult> Export([FromQuery] string? stage, [FromQuery] Guid? source, [FromQuery] Guid? owner, [FromQuery] string format = "csv", CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Export(
+        [FromQuery] string? stage, [FromQuery] Guid? source, [FromQuery] Guid? owner,
+        [FromQuery] DateTimeOffset? createdFrom, [FromQuery] DateTimeOffset? createdTo, [FromQuery] string? q, [FromQuery] string? status,
+        [FromQuery] string format = "csv", CancellationToken cancellationToken = default)
     {
-        var content = await mediator.Send(new ExportLeadsQuery(stage, source, owner, format), cancellationToken);
+        var content = await mediator.Send(new ExportLeadsQuery(stage, source, owner, createdFrom, createdTo, q, status, format), cancellationToken);
         var contentType = format.Equals("xlsx", StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "text/csv";
         return File(content, contentType, $"leads-export.{format}");
     }

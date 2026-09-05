@@ -47,7 +47,7 @@ public sealed class TimeTrackingServiceTests
         db.Entry(rawTimer).Property("StartedAt").CurrentValue = DateTimeOffset.UtcNow.AddMinutes(-7);
         await db.SaveChangesAsync();
 
-        var entry = await service.StopTimerAsync(tenantId, userId, new StopTimerInput(true, "Reviewed pleadings", null, null), CancellationToken.None);
+        var entry = await service.StopTimerAsync(tenantId, userId, new StopTimerInput(true, "Reviewed pleadings", null, null, null), CancellationToken.None);
 
         entry.Status.Should().Be("Draft");
         entry.Source.Should().Be("timer");
@@ -65,9 +65,25 @@ public sealed class TimeTrackingServiceTests
 
         await service.StartTimerAsync(tenantId, userId, new StartTimerInput(null, null, "matter-042"), CancellationToken.None);
 
-        var act = () => service.StopTimerAsync(tenantId, userId, new StopTimerInput(true, "narrative", null, null), CancellationToken.None);
+        var act = () => service.StopTimerAsync(tenantId, userId, new StopTimerInput(true, "narrative", null, null, null), CancellationToken.None);
 
         await act.Should().ThrowAsync<ValidationException>();
+    }
+
+    [Fact]
+    public async Task StopTimerAsync_accepts_a_matter_supplied_at_stop_time_to_classify_a_blank_timer()
+    {
+        await using var db = CreateContext(nameof(StopTimerAsync_accepts_a_matter_supplied_at_stop_time_to_classify_a_blank_timer));
+        var service = new TimeTrackingService(db);
+        var tenantId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var matterId = Guid.NewGuid();
+
+        await service.StartTimerAsync(tenantId, userId, new StartTimerInput(null, null, null), CancellationToken.None);
+
+        var entry = await service.StopTimerAsync(tenantId, userId, new StopTimerInput(true, "narrative", null, null, matterId), CancellationToken.None);
+
+        entry.MatterId.Should().Be(matterId);
     }
 
     [Fact]

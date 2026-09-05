@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LexFlow.Application.Common.Exceptions;
 using LexFlow.Application.Common.Interfaces;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +24,12 @@ public sealed class AnthropicLlmProvider(IHttpClientFactory httpClientFactory, I
         var config = options.Value;
         if (string.IsNullOrWhiteSpace(config.AnthropicApiKey))
         {
-            throw new InvalidOperationException("Ai:AnthropicApiKey is not configured — the AI Gateway cannot call the provider without server-side credentials (Module 16: 'no client-side model keys').");
+            // Surfaced verbatim to the caller via ExceptionHandlingMiddleware's
+            // DomainRuleException -> 422 mapping (same pattern as TAX_NOT_CONFIGURED) so the
+            // Angular AI dock can show this instead of a generic "Something went wrong."
+            throw new DomainRuleException(
+                "AI_NOT_CONFIGURED",
+                "AI Assistant is not configured. Ask an administrator to set the Ai:AnthropicApiKey server configuration (Ai__AnthropicApiKey environment variable) to enable AI features.");
         }
 
         var client = httpClientFactory.CreateClient(nameof(AnthropicLlmProvider));
@@ -41,15 +47,40 @@ public sealed class AnthropicLlmProvider(IHttpClientFactory httpClientFactory, I
         httpRequest.Headers.Add("x-api-key", config.AnthropicApiKey);
         httpRequest.Headers.Add("anthropic-version", config.AnthropicApiVersion);
 
-        using var response = await client.SendAsync(httpRequest, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.SendAsync(httpRequest, cancellationToken);
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // The client's own request wasn't cancelled — this is the HttpClient timeout
+            // (configured in DependencyInjection) tripping, not the caller navigating away.
+            throw new DomainRuleException("AI_PROVIDER_TIMEOUT", "The AI provider took too long to respond. Please try again.");
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DomainRuleException("AI_PROVIDER_ERROR", "Could not reach the AI provider. Please try again shortly.", ex.Message);
+        }
 
-        var parsed = JsonSerializer.Deserialize<AnthropicResponse>(body) ?? throw new InvalidOperationException("Anthropic API returned an unparseable response.");
-        var text = string.Join(string.Empty, parsed.Content.Select(c => c.Text));
-        var refused = parsed.StopReason == "refusal";
+        using (response)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new DomainRuleException(
+                    "AI_PROVIDER_ERROR",
+                    response.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                        ? "AI Assistant is not configured correctly (the configured API key was rejected)."
+                        : "The AI provider returned an error. Please try again shortly.");
+            }
 
-        return new LlmCompletionResult(text, parsed.Usage.InputTokens, parsed.Usage.OutputTokens, request.Model, refused);
+            var parsed = JsonSerializer.Deserialize<AnthropicResponse>(body) ?? throw new DomainRuleException("AI_PROVIDER_ERROR", "The AI provider returned an unparseable response.");
+            var text = string.Join(string.Empty, parsed.Content.Select(c => c.Text));
+            var refused = parsed.StopReason == "refusal";
+
+            return new LlmCompletionResult(text, parsed.Usage.InputTokens, parsed.Usage.OutputTokens, request.Model, refused);
+        }
     }
 
     private sealed record AnthropicRequest(

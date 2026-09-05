@@ -40,7 +40,7 @@ public interface ITimeTrackingService
 
 public sealed record StartTimerInput(Guid? MatterId, Guid? ActivityCodeId, string? ContextRef);
 
-public sealed record StopTimerInput(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId);
+public sealed record StopTimerInput(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId, Guid? MatterId);
 
 public sealed record CreateTimeEntryInput(Guid MatterId, Guid? ActivityCodeId, DateOnly EntryDate, DateTimeOffset? StartedAt, int DurationMin, bool Billable, string? Narrative, string? InternalNote);
 

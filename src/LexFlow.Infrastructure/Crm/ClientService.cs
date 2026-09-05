@@ -105,13 +105,13 @@ public sealed class ClientService(LexFlowDbContext db, IKycEncryptionService kyc
 
         if (!string.IsNullOrWhiteSpace(filter.Query))
         {
-            var q = filter.Query;
+            var q = $"%{filter.Query}%";
             query = query.Where(c =>
-                (c.FirstName != null && c.FirstName.Contains(q)) ||
-                (c.LastName != null && c.LastName.Contains(q)) ||
-                (c.LegalName != null && c.LegalName.Contains(q)) ||
-                (c.Email != null && c.Email.Contains(q)) ||
-                (c.PhoneE164 != null && c.PhoneE164.Contains(q)));
+                (c.FirstName != null && EF.Functions.ILike(c.FirstName, q)) ||
+                (c.LastName != null && EF.Functions.ILike(c.LastName, q)) ||
+                (c.LegalName != null && EF.Functions.ILike(c.LegalName, q)) ||
+                (c.Email != null && EF.Functions.ILike(c.Email, q)) ||
+                (c.PhoneE164 != null && EF.Functions.ILike(c.PhoneE164, q)));
         }
 
         var clients = await query.OrderByDescending(c => c.CreatedAt).ToListAsync(cancellationToken);

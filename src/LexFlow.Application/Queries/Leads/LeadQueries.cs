@@ -27,6 +27,24 @@ public sealed class GetLeadsQueryHandler(ILeadService leadService, ICurrentUserS
             cancellationToken);
 }
 
+/// <summary>GET /api/v1/leads/sources — populates the Source dropdown on the create/edit lead form.</summary>
+public sealed record GetLeadSourcesQuery : IRequest<IReadOnlyList<LeadSourceDto>>;
+
+public sealed class GetLeadSourcesQueryHandler(ILeadService leadService, ICurrentUserService currentUser) : IRequestHandler<GetLeadSourcesQuery, IReadOnlyList<LeadSourceDto>>
+{
+    public Task<IReadOnlyList<LeadSourceDto>> Handle(GetLeadSourcesQuery request, CancellationToken cancellationToken)
+        => leadService.GetSourcesAsync(currentUser.TenantId!.Value, cancellationToken);
+}
+
+/// <summary>GET /api/v1/leads/lost-reasons — populates the Reason dropdown on "Mark lost."</summary>
+public sealed record GetLeadLostReasonsQuery : IRequest<IReadOnlyList<LostReasonDto>>;
+
+public sealed class GetLeadLostReasonsQueryHandler(ILeadService leadService, ICurrentUserService currentUser) : IRequestHandler<GetLeadLostReasonsQuery, IReadOnlyList<LostReasonDto>>
+{
+    public Task<IReadOnlyList<LostReasonDto>> Handle(GetLeadLostReasonsQuery request, CancellationToken cancellationToken)
+        => leadService.GetLostReasonsAsync(currentUser.TenantId!.Value, cancellationToken);
+}
+
 /// <summary>POST /api/v1/leads/check-duplicates {name,email,phone}. Module 2 User Flow step 2 (pg_trgm fuzzy match).</summary>
 public sealed record CheckLeadDuplicatesQuery(string? Name, string? Email, string? PhoneE164) : IRequest<IReadOnlyList<DuplicateMatchDto>>;
 
@@ -37,14 +55,17 @@ public sealed class CheckLeadDuplicatesQueryHandler(ILeadService leadService, IC
 }
 
 /// <summary>GET /api/v1/leads/export?format=csv|xlsx.</summary>
-public sealed record ExportLeadsQuery(string? Stage, Guid? SourceId, Guid? OwnerId, string? Format) : IRequest<byte[]>;
+public sealed record ExportLeadsQuery(string? Stage, Guid? SourceId, Guid? OwnerId, DateTimeOffset? CreatedFrom, DateTimeOffset? CreatedTo, string? Query, string? Status, string? Format) : IRequest<byte[]>;
 
 public sealed class ExportLeadsQueryHandler(ILeadService leadService, ICurrentUserService currentUser) : IRequestHandler<ExportLeadsQuery, byte[]>
 {
     public Task<byte[]> Handle(ExportLeadsQuery request, CancellationToken cancellationToken)
         => leadService.ExportAsync(
             currentUser.TenantId!.Value,
-            new LeadFilter(request.Stage, request.SourceId, request.OwnerId, null, null, null, null, null),
+            // Mirrors GetLeadsQueryHandler's LeadFilter construction so an export always
+            // reflects the same Stage/Source/Status/Search/Created-date filters the user
+            // currently has applied on the list, not just Stage.
+            new LeadFilter(request.Stage, request.SourceId, request.OwnerId, null, request.CreatedFrom, request.CreatedTo, request.Query, request.Status),
             request.Format ?? "csv",
             cancellationToken);
 }

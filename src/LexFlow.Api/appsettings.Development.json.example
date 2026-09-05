@@ -7,5 +7,8 @@
   },
   "ConnectionStrings": {
     "LexFlowDatabase": "Host=localhost;Port=5432;Database=lexflow;Username=postgres;Password=CHANGE_ME"
+  },
+  "Ai": {
+    "AnthropicApiKey": "CHANGE_ME"
   }
 }

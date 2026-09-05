@@ -87,8 +87,8 @@ public sealed class DocumentService(LexFlowDbContext db, IBlobStorageService blo
 
         if (!string.IsNullOrWhiteSpace(filter.Query))
         {
-            var q = filter.Query;
-            query = query.Where(d => d.Title.Contains(q));
+            var q = $"%{filter.Query}%";
+            query = query.Where(d => EF.Functions.ILike(d.Title, q));
         }
 
         // AC-DOC3: the privileged gate applies here too, not just to the ES-backed search

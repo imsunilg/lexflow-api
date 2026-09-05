@@ -27,12 +27,12 @@ public sealed class ResumeTimerCommandHandler(ITimeTrackingService service, ICur
         => service.ResumeTimerAsync(currentUser.TenantId!.Value, currentUser.UserId!.Value, cancellationToken);
 }
 
-public sealed record StopTimerCommand(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId) : IRequest<TimeEntryDto>;
+public sealed record StopTimerCommand(bool Billable, string? Narrative, string? InternalNote, Guid? ActivityCodeId, Guid? MatterId) : IRequest<TimeEntryDto>;
 
 public sealed class StopTimerCommandHandler(ITimeTrackingService service, ICurrentUserService currentUser) : IRequestHandler<StopTimerCommand, TimeEntryDto>
 {
     public Task<TimeEntryDto> Handle(StopTimerCommand request, CancellationToken cancellationToken)
-        => service.StopTimerAsync(currentUser.TenantId!.Value, currentUser.UserId!.Value, new StopTimerInput(request.Billable, request.Narrative, request.InternalNote, request.ActivityCodeId), cancellationToken);
+        => service.StopTimerAsync(currentUser.TenantId!.Value, currentUser.UserId!.Value, new StopTimerInput(request.Billable, request.Narrative, request.InternalNote, request.ActivityCodeId, request.MatterId), cancellationToken);
 }
 
 public sealed record CreateTimeEntryCommand(Guid MatterId, Guid? ActivityCodeId, DateOnly EntryDate, DateTimeOffset? StartedAt, int DurationMin, bool Billable, string? Narrative, string? InternalNote) : IRequest<TimeEntryDto>;

@@ -151,10 +151,15 @@ public sealed class DashboardService(LexFlowDbContext db) : IDashboardService
         return daysOut <= 2 ? "high" : daysOut <= 7 ? "medium" : "low";
     }
 
-    public async Task<IReadOnlyList<ActivityItemDto>> GetActivityAsync(Guid tenantId, int limit, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ActivityItemDto>> GetActivityAsync(Guid tenantId, Guid userId, int limit, CancellationToken cancellationToken = default)
     {
+        var clearedAt = await db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.DashboardActivityClearedAt)
+            .SingleOrDefaultAsync(cancellationToken);
+
         var events = await db.AuditEvents
-            .Where(a => a.TenantId == tenantId)
+            .Where(a => a.TenantId == tenantId && (clearedAt == null || a.At > clearedAt))
             .OrderByDescending(a => a.At)
             .Take(limit)
             .ToListAsync(cancellationToken);
@@ -167,6 +172,19 @@ public sealed class DashboardService(LexFlowDbContext db) : IDashboardService
             $"{a.Action} {HumanizeEntityType(a.EntityType)}",
             a.ActorUserId.HasValue && actors.TryGetValue(a.ActorUserId.Value, out var name) ? name : "System",
             a.At)).ToList();
+    }
+
+    /// <summary>
+    /// "Clear All" on the Recent Activities widget. audit.audit_events is insert-only
+    /// (grant-revoked and trigger-blocked against UPDATE/DELETE — PRD §18/§30) and is the
+    /// tenant's shared audit trail, not a per-user feed, so this never touches it: it only
+    /// advances this user's own cursor, which <see cref="GetActivityAsync"/> filters against.
+    /// </summary>
+    public async Task ClearActivityAsync(Guid tenantId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleAsync(u => u.TenantId == tenantId && u.Id == userId, cancellationToken);
+        user.ClearDashboardActivity(DateTimeOffset.UtcNow);
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     private static string HumanizeEntityType(string entityType)

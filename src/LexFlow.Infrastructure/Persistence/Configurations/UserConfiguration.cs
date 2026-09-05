@@ -33,6 +33,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.TwoFaSecret).HasColumnName("two_fa_secret").HasColumnType("bytea");
         builder.Property(u => u.TwoFaEnabled).HasColumnName("two_fa_enabled").IsRequired();
         builder.Property(u => u.NotificationPrefs).HasColumnName("notification_prefs").HasColumnType("jsonb").IsRequired();
+        builder.Property(u => u.DashboardActivityClearedAt).HasColumnName("dashboard_activity_cleared_at");
 
         builder.Property(u => u.CreatedAt).HasColumnName("created_at").IsRequired();
         builder.Property(u => u.CreatedBy).HasColumnName("created_by");
